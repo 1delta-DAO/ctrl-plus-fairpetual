@@ -27,11 +27,11 @@ const StyledIconLink: React.FC<StyledIconLinkProps> = ({ className, children, ..
 )
 
 export const HomePageTitle: FC = () => {
-  const title = 'ink!athon'
-  const desc = 'Full-Stack DApp Boilerplate for ink! Smart Contracts'
-  const githubHref = 'https://github.com/scio-labs/inkathon'
-  const deployHref = 'https://github.com/scio-labs/inkathon#deployment-'
-  const telegramHref = 'https://t.me/inkathon'
+  const title = 'Fairpetuals'
+  const desc = 'Perpetuals on Aleph Zero'
+  const githubHref = 'https://github.com/1delta-DAO/ctrl-plus-fairpetual'
+  const deployHref = 'https://github.com/1delta-DAO/ctrl-plus-fairpetual'
+  const telegramHref = 'https://t.me/OneDeltaDAO'
 
   return (
     <>

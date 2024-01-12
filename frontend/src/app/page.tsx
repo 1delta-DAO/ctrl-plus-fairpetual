@@ -5,10 +5,10 @@ import { useEffect } from 'react'
 import { useInkathon } from '@scio-labs/use-inkathon'
 import { toast } from 'react-hot-toast'
 
-import { HomePageTitle } from '@/app/components/home-page-title'
-import { ChainInfo } from '@/components/web3/chain-info'
-import { ConnectButton } from '@/components/web3/connect-button'
-import { GreeterContractInteractions } from '@/components/web3/greeter-contract-interactions'
+import { Navbar } from '@/app/components/navbar'
+import ChartInfo from './components/chart-info'
+import PositionManagement from './components/position-management'
+import TradingViewChart from './components/tradingview-chart'
 
 export default function HomePage() {
   // Display `useInkathon` error messages (optional)
@@ -18,21 +18,21 @@ export default function HomePage() {
     toast.error(error.message)
   }, [error])
 
+  const chartInfo = {
+    price: 1.28,
+    change24: 0.12
+  }
+
   return (
     <>
-      <div className="container relative flex grow flex-col items-center justify-center py-10">
-        {/* Title */}
-        <HomePageTitle />
-
-        {/* Connect Wallet Button */}
-        <ConnectButton />
-
-        <div className="mt-12 flex w-full flex-wrap items-start justify-center gap-4">
-          {/* Chain Metadata Information */}
-          <ChainInfo />
-
-          {/* Greeter Read/Write Contract Interactions */}
-          <GreeterContractInteractions />
+      <Navbar />
+      <div className="container relative flex grow flex items-start py-4 max-w-[1600px] gap-4">
+        <div className='w-full flex flex-col p-4 bg-purple-950 rounded gap-4 items-center'>
+          <ChartInfo ChartInfo={chartInfo} />
+          <TradingViewChart />
+        </div>
+        <div className='w-[40rem]'>
+          <PositionManagement />
         </div>
       </div>
     </>
