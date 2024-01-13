@@ -13,7 +13,7 @@ const ChartInfo: FC<ChartInfoProps> = ({ ChartInfo }) => {
   const { price, change24 } = ChartInfo
 
   return (
-    <div className='flex gap-14 items-center w-full bg-purple-800 p-3 rounded-[0.35em]'>
+    <div className='flex gap-14 items-center w-full bg-violet-800 p-3 rounded-[0.35em]'>
       <div className='flex font-bold text-xl items-center gap-2'>
         <img src="https://avatars.githubusercontent.com/u/54438045?s=200&v=4" width="20px" className="rounded-full"/>
         <span>AZERO / USD</span>

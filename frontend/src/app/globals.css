@@ -82,4 +82,18 @@
     -webkit-appearance: none;
     margin: 0;
   }
+
+  .leverageSlider {
+    max-inline-size: none !important;
+    > div {
+      margin-inline-start: 0.25em !important;
+      margin-inline-end: 0.25em !important;
+    }
+    input, .euiRangeTick.css-lcyvsn-euiRangeTick-selected-isCustom-hasPseudoTickMark-regular {
+      color: #9362e8 !important;
+    }
+    .euiRangeTick.css-1nb1ri7-euiRangeTick-isCustom-hasPseudoTickMark-regular:hover {
+      color: #7c3aed !important;
+    }
+  }
 }

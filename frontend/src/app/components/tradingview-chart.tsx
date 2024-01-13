@@ -31,7 +31,7 @@ function TradingViewChart() {
   );
 
   return (
-    <div className="tradingview-widget-container bg-purple-950 rounded rounded-t-none" ref={container} style={{ height: "100%", width: "100%" }}>
+    <div className="tradingview-widget-container bg-violet-950 rounded rounded-t-none" ref={container} style={{ height: "100%", width: "100%" }}>
       <div className="tradingview-widget-container__widget" style={{ height: "calc(100% - 32px)", width: "100%" }} />
     </div>
   );
