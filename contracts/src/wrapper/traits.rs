@@ -1,20 +1,33 @@
-use crate::errors::WrapperError;
+use psp22::PSP22Error;
 
 #[ink::trait_definition]
-pub trait Wrapper {
-    /// Deposits transfered native currency amount as PSP22 token.
+pub trait WrappedAZERO {
+    /// Deposits the transferred amount of AZERO and mints that much wAZERO to the callers account.
+    ///
+    /// # Events
+    ///
+    /// On success a `Transfer` event is emitted for newly minted wAZERO (with `from` being `None`).
+    ///
+    /// No-op if the transferred value is zero, returns success and no events are emitted.
     ///
     /// # Errors
     ///
-    /// Returns with `AmountIsZero` if transfered amount is 0 or less.
+    /// Reverts with `Custom` error variant if minting new tokens would cause the total token supply
+    /// to exceed maximal `u128` value.
     #[ink(message, payable)]
-    fn deposit(&mut self) -> Result<(), WrapperError>;
+    fn deposit(&mut self) -> Result<(), PSP22Error>;
 
-    /// Withdraws native currency and transfers to caller.
+    /// Burns `value` wAZERO tokens from the callers account and transfers that much AZERO to them.
+    ///
+    /// # Events
+    ///
+    /// On success a `Transfer` event is emitted for burned wAZERO (with `to` being `None`).
+    ///
+    /// No-op if the `value` is zero, returns success and no events are emitted.
     ///
     /// # Errors
     ///
-    /// Returns with `InsufficientBalance` if the `amount` exceeds the caller's balance.
+    /// Reverts with `InsufficientBalance` if the `value` exceeds the caller's wAZERO balance.
     #[ink(message)]
-    fn withdraw(&mut self, amount: u128) -> Result<(), WrapperError>;
+    fn withdraw(&mut self, value: u128) -> Result<(), PSP22Error>;
 }
