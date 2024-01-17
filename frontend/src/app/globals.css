@@ -97,4 +97,28 @@
       color: #7c3aed !important;
     }
   }
+
+  td,
+  th {
+    padding: 0.5rem 0.75rem;
+  }
+
+  th {
+    background-color: #7c3aed;
+  }
+
+  thead th:first-child {
+    border-top-left-radius: 0.35rem;
+    border-bottom-left-radius: 0.35rem;
+  }
+
+  thead th:last-child {
+    border-top-right-radius: 0.35rem;
+    border-bottom-right-radius: 0.35rem;
+  }
+
+  tbody tr:not(:last-child) {
+    border-bottom-width: 1px;
+    border-bottom-color: #7c3aed;
+  }
 }

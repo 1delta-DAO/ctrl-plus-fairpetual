@@ -14,7 +14,7 @@ const PositionManagement: FC = () => {
   const [leverage, setLeverage] = useState<EuiRangeProps['value']>('2')
 
   const longShortCommon = 'rounded-[0.35em] py-2 w-full text-center transition-all'
-  const longShortActive = 'bg-violet-600'
+  const longShortActive = 'bg-violet-600 font-bold'
   const longShortInactive = 'text-gray-400 cursor-pointer hover:bg-violet-700'
 
   const longShortCss = (long: boolean) => {
@@ -74,7 +74,9 @@ const PositionManagement: FC = () => {
         </div>
       </div>
 
-      <Button className="rounded-[0.35em]">{LongOrShortLabel}</Button>
+      <Button className="rounded-[0.35em]">
+        <span className="text-[1.1em] font-bold">{LongOrShortLabel}</span>
+      </Button>
     </div>
   )
 }
