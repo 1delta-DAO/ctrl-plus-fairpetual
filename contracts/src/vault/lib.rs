@@ -1,20 +1,16 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
-#[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode)]
-#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
-pub enum VaultError {
-    AmountIsZero,
-    AssetAlreadyExist,
-    AssetNotFound,
-    InsufficientBalance,
-    MarketAlreadyExist,
-    MarketNotFound,
-    NotAdmin,
-    TransferError,
-}
+mod errors;
+mod traits;
+
+pub use errors::VaultError;
+pub use traits::CollateralVault;
+
+pub use self::vault::VaultRef;
 
 #[ink::contract]
-pub mod vault {
+mod vault {
+    use crate::CollateralVault;
     use ink::contract_ref;
     use ink::prelude::vec::Vec;
     use ink::storage::Mapping;
@@ -26,7 +22,7 @@ pub mod vault {
     pub struct Vault {
         admin: AccountId,
         // (asset, user, position) => Balance
-        balances: Mapping<(AccountId, AccountId, u8), Balance>,
+        balances: Mapping<(AccountId, AccountId, u128), Balance>,
         markets: Vec<AccountId>,
         assets: Vec<AccountId>,
     }
@@ -43,33 +39,35 @@ pub mod vault {
                 assets: Default::default(),
             }
         }
+    }
 
+    impl CollateralVault for Vault {
         #[ink(message)]
-        pub fn user_collateral(
+        fn user_collateral(
             &self,
             asset: AccountId,
             user: AccountId,
-            id: u8,
+            id: u128,
         ) -> Option<Balance> {
             self.balances.get((asset, user, id))
         }
 
         #[ink(message)]
-        pub fn supported_collateral_assets(&self) -> Vec<AccountId> {
+        fn supported_collateral_assets(&self) -> Vec<AccountId> {
             self.assets.clone()
         }
 
         #[ink(message)]
-        pub fn markets_with_access(&self) -> Vec<AccountId> {
+        fn markets_with_access(&self) -> Vec<AccountId> {
             self.markets.clone()
         }
 
         #[ink(message)]
-        pub fn deposit(
+        fn deposit(
             &mut self,
             asset: AccountId,
             user: AccountId,
-            id: u8,
+            id: u128,
             amount: Balance,
         ) -> Result<(), VaultError> {
             let caller = self.env().caller();
@@ -99,11 +97,11 @@ pub mod vault {
         }
 
         #[ink(message)]
-        pub fn withdraw(
+        fn withdraw(
             &mut self,
             asset: AccountId,
             user: AccountId,
-            id: u8,
+            id: u128,
             amount: Balance,
         ) -> Result<(), VaultError> {
             let caller = self.env().caller();
@@ -140,7 +138,7 @@ pub mod vault {
         }
 
         #[ink(message)]
-        pub fn add_asset(&mut self, asset: AccountId) -> Result<(), VaultError> {
+        fn add_asset(&mut self, asset: AccountId) -> Result<(), VaultError> {
             let caller = self.env().caller();
 
             if caller != self.admin {
@@ -157,7 +155,7 @@ pub mod vault {
         }
 
         #[ink(message)]
-        pub fn add_market(&mut self, market: AccountId) -> Result<(), VaultError> {
+        fn add_market(&mut self, market: AccountId) -> Result<(), VaultError> {
             let caller = self.env().caller();
 
             if caller != self.admin {
