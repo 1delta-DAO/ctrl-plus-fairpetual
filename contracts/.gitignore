@@ -126,7 +126,8 @@ fabric.properties
 .node-data
 
 # Local deployments
-deployments/**/development.json
+deployments/**/*
+!deployments/**/*.ts
 deployments/**/development.ts
 
 # Environment files
