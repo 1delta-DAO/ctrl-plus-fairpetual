@@ -1,10 +1,6 @@
-import { FC } from 'react';
+import { FC } from 'react'
 
-import {
-  EuiRange,
-  EuiRangeProps,
-  useGeneratedHtmlId
-} from '@elastic/eui';
+import { EuiRange, EuiRangeProps, useGeneratedHtmlId } from '@elastic/eui'
 
 interface LeverageSliderProps {
   leverage: EuiRangeProps['value']
@@ -12,12 +8,11 @@ interface LeverageSliderProps {
 }
 
 const LeverageSlider: FC<LeverageSliderProps> = ({ leverage, setLeverage }) => {
-
   const onChange: EuiRangeProps['onChange'] = (e) => {
     setLeverage(e.currentTarget.value)
-  };
+  }
 
-  const rangeNoLinearId = useGeneratedHtmlId({ prefix: 'rangeNoLinear' });
+  const rangeNoLinearId = useGeneratedHtmlId({ prefix: 'rangeNoLinear' })
 
   const levels = [
     {
@@ -57,10 +52,11 @@ const LeverageSlider: FC<LeverageSliderProps> = ({ leverage, setLeverage }) => {
         ticks={ticks}
         levels={Number(leverage) > 1 ? levels : [levels[0]]}
         aria-label="Leverage Slider"
-        className='leverageSlider' // defined in globals.css
+        className="leverageSlider" // defined in globals.css
+        style={{ marginBottom: '0.5em' }}
       />
     </>
-  );
-};
+  )
+}
 
-export default LeverageSlider;
+export default LeverageSlider
