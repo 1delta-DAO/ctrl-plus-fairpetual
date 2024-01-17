@@ -1,0 +1,33 @@
+[package]
+name = "market"
+version = "0.0.1"
+authors = ["1delta <volkan@1delta.io>"]
+edition = "2021"
+publish = false
+
+[dependencies]
+ink = { version = "4.3.0", default-features = false }
+
+scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
+scale-info = { version = "2.9", default-features = false, features = ["derive"], optional = true }
+psp22 = { version = "0.2", default-features = false, features = ["ink-as-dependency"] }
+vault = { path = "../vault", default-features = false, features = ["ink-as-dependency"] }
+dia-oracle-getter = { path = "../oracle/oracle-getter", default-features = false }
+
+[dev-dependencies]
+ink_e2e = { version = "4.3" }
+
+[lib]
+path = "lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "ink/std", 
+    "scale/std", 
+    "scale-info/std",
+    "psp22/std",
+    "vault/std",
+]
+ink-as-dependency = []
+e2e-tests = []
