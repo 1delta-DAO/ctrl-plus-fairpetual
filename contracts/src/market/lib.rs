@@ -3,16 +3,20 @@
 mod errors;
 mod position;
 
-pub use position::Position;
 pub use errors::MarketError;
+pub use position::Position;
 
 #[ink::contract]
 mod market {
     use crate::{MarketError, Position};
-    use ink::{contract_ref, prelude::{string::String, vec::Vec, format}, storage::Mapping};
     use dia_oracle_getter::OracleGetters;
-    use vault::CollateralVault;
+    use ink::{
+        contract_ref,
+        prelude::{format, string::String, vec::Vec},
+        storage::Mapping,
+    };
     use psp22::{PSP22Data, PSP22Error, PSP22Metadata, PSP22};
+    use vault::CollateralVault;
 
     #[ink(event)]
     pub struct Approval {
@@ -79,7 +83,8 @@ mod market {
 
             let oracle_getter: contract_ref!(OracleGetters) = self.oracle.into();
 
-            let (_timestamp, price) = oracle_getter.get_latest_price(pair_symbol)
+            let (_timestamp, price) = oracle_getter
+                .get_latest_price(pair_symbol)
                 .ok_or(MarketError::OracleFailed)?;
 
             // DIA price oracle returns usd price with 18 decimals by default
@@ -89,8 +94,7 @@ mod market {
         fn get_symbol_and_decimals(&self, token: AccountId) -> Result<(String, u8), MarketError> {
             let metadata: contract_ref!(PSP22Metadata) = token.into();
 
-            let symbol = metadata.token_symbol()
-                .ok_or(MarketError::OracleFailed)?;
+            let symbol = metadata.token_symbol().ok_or(MarketError::OracleFailed)?;
 
             let decimals = metadata.token_decimals();
 
@@ -99,8 +103,8 @@ mod market {
 
         #[ink(message)]
         pub fn open(
-            &mut self, 
-            collateral_asset: AccountId, 
+            &mut self,
+            collateral_asset: AccountId,
             collateral_amount: Balance,
             receiver: AccountId,
             is_long: bool,
@@ -111,12 +115,15 @@ mod market {
 
             // transfer collateral from caller to contract
             let mut collateral: contract_ref!(PSP22) = collateral_asset.into();
-            collateral.transfer_from(caller, contract, collateral_amount, Vec::new())
+            collateral
+                .transfer_from(caller, contract, collateral_amount, Vec::new())
                 .map_err(|_| MarketError::TransferFailed)?;
 
             // calculate colateral price
-            let (collateral_symbol, collateral_decimals) = self.get_symbol_and_decimals(collateral_asset)?;
-            let (collateral_price, collateral_price_decimals) = self.get_price(collateral_symbol)?;
+            let (collateral_symbol, collateral_decimals) =
+                self.get_symbol_and_decimals(collateral_asset)?;
+            let (collateral_price, collateral_price_decimals) =
+                self.get_price(collateral_symbol)?;
             let collateral_usd = collateral_price * collateral_amount;
             let collateral_usd_decimals = collateral_decimals + collateral_price_decimals;
 
@@ -126,29 +133,31 @@ mod market {
 
             // create position (position id is incremented and used only once)
             let id = self.ids.get(caller).unwrap_or_default();
-            self.positions.insert((caller, id), &Position::new(
-                caller, 
-                id, 
-                collateral_asset, 
-                collateral_usd,
-                collateral_usd_decimals,
-                entry_price,
-                entry_decimals,
-                leverage, 
-                is_long, 
-                self.env().block_number(),
-            ));
+            self.positions.insert(
+                (caller, id),
+                &Position::new(
+                    caller,
+                    id,
+                    collateral_asset,
+                    collateral_usd,
+                    collateral_usd_decimals,
+                    entry_price,
+                    entry_decimals,
+                    leverage,
+                    is_long,
+                    self.env().block_number(),
+                ),
+            );
 
             // approve and deposit collateral in vault
-            collateral.approve(self.vault, collateral_amount)
+            collateral
+                .approve(self.vault, collateral_amount)
                 .map_err(|_| MarketError::ApproveFailed)?;
 
             let mut vault: contract_ref!(CollateralVault) = self.vault.into();
-            vault.deposit(collateral_asset, caller, id, collateral_amount)
+            vault
+                .deposit(collateral_asset, caller, id, collateral_amount)
                 .map_err(|_| MarketError::TransferFailed)?;
-
-            // mint position tokens to caller
-            self.data.mint(receiver, collateral_amount).map_err(|_| MarketError::MintFailed)?;
 
             self.ids.insert(caller, &id.saturating_add(1));
 
@@ -224,9 +233,9 @@ mod market {
             spender: AccountId,
             delta_value: u128,
         ) -> Result<(), PSP22Error> {
-            let _events = self
-                .data
-                .increase_allowance(self.env().caller(), spender, delta_value)?;
+            let _events =
+                self.data
+                    .increase_allowance(self.env().caller(), spender, delta_value)?;
             Ok(())
         }
 
@@ -236,9 +245,9 @@ mod market {
             spender: AccountId,
             delta_value: u128,
         ) -> Result<(), PSP22Error> {
-            let _events = self
-                .data
-                .decrease_allowance(self.env().caller(), spender, delta_value)?;
+            let _events =
+                self.data
+                    .decrease_allowance(self.env().caller(), spender, delta_value)?;
             Ok(())
         }
     }
