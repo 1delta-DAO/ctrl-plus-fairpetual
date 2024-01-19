@@ -357,6 +357,20 @@ mod market {
         }
 
         #[ink(message)]
+        pub fn open_native(
+            &mut self,
+            is_long: bool,
+            leverage: u8,
+        ) -> Result<(), MarketError> {
+            let collateral_amount = self.env().transferred_value();
+            self.wrap_native(collateral_amount)?;
+
+            self.open_position(self.wazero, collateral_amount, is_long, leverage)?;
+
+            Ok(())
+        }
+
+        #[ink(message)]
         pub fn open(
             &mut self,
             collateral_asset: AccountId,
