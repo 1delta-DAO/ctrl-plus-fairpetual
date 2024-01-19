@@ -14,7 +14,7 @@ pub trait WrappedAZERO {
     ///
     /// Reverts with `Custom` error variant if minting new tokens would cause the total token supply
     /// to exceed maximal `u128` value.
-    #[ink(message, payable)]
+    #[ink(message, payable, selector = 7)]
     fn deposit(&mut self) -> Result<(), PSP22Error>;
 
     /// Burns `value` wAZERO tokens from the callers account and transfers that much AZERO to them.

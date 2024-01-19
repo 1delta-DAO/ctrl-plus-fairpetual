@@ -3,12 +3,15 @@
 mod traits;
 
 pub use traits::WrappedAZERO;
+pub use wazero::WAZERO_DEPOSIT_SELECTOR;
 
 #[ink::contract]
 mod wazero {
     use crate::WrappedAZERO;
     use ink::prelude::{string::String, vec::Vec};
     use psp22::{PSP22Data, PSP22Error, PSP22Event, PSP22Metadata, PSP22};
+
+    pub const WAZERO_DEPOSIT_SELECTOR: [u8; 4] = [0, 0, 0, 7];
 
     #[ink(event)]
     pub struct Approval {
@@ -61,7 +64,7 @@ mod wazero {
     }
 
     impl WrappedAZERO for Wazero {
-        #[ink(message, payable)]
+        #[ink(message, payable, selector = 7)]
         fn deposit(&mut self) -> Result<(), PSP22Error> {
             let events = self
                 .data
