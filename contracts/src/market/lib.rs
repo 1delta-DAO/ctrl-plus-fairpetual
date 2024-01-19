@@ -57,7 +57,7 @@ mod market {
         underlying_asset: AccountId,
         oracle: AccountId,
         vault: AccountId,
-        is_native_asset: bool,
+        wazero: AccountId,
     }
 
     impl Market {
@@ -70,7 +70,7 @@ mod market {
             underlying_asset: AccountId,
             oracle: AccountId,
             vault: AccountId,
-            is_native_asset: bool,
+            wazero: AccountId,
         ) -> Self {
             Self {
                 data: PSP22Data::new(supply, Self::env().caller()),
@@ -83,7 +83,7 @@ mod market {
                 underlying_asset,
                 oracle,
                 vault,
-                is_native_asset,
+                wazero,
             }
         }
 
@@ -173,17 +173,10 @@ mod market {
                 .ok_or(MarketError::Overflow)
         }
 
-        #[ink(message, payable)]
-        pub fn deposit_native(&mut self) -> Result<(), MarketError> {
-            let caller = self.env().caller();
-            let contract = self.env().account_id();
-
-            if !self.is_native_asset {
-                return Err(MarketError::NotSupported);
-            }
-
-            let transferred_amount = self.env().transferred_value();
-
+        fn wrap_native(
+            &self,
+            transferred_amount: u128,
+        ) -> Result<(), MarketError> {
             let call_result: Result<Result<(), PSP22Error>, LangError> =
                 build_call::<DefaultEnvironment>()
                     .call(self.underlying_asset)
@@ -198,32 +191,15 @@ mod market {
 
             call_result
                 .map_err(|_| MarketError::LangError)?
-                .map_err(|_| MarketError::TransferFailed)?;
-
-            let deposit_token_amount = transferred_amount
-                .checked_mul(self.total_supply())
-                .ok_or(MarketError::Overflow)?
-                .checked_div(self.balance_of(contract))
-                .ok_or(MarketError::Overflow)?;
-
-            self.data.mint(caller, deposit_token_amount)
-                .map_err(|_| MarketError::MintFailed)?;
-
-            Ok(())
+                .map_err(|_| MarketError::TransferFailed)
         }
 
-        #[ink(message)]
-        pub fn deposit(
+        fn calculate_amount_and_mint(
             &mut self,
+            caller: AccountId,
             amount: u128,
         ) -> Result<(), MarketError> {
-            let caller = self.env().caller();
             let contract = self.env().account_id();
-
-            let mut underlying_asset: contract_ref!(PSP22) = self.underlying_asset.into();
-            underlying_asset
-                .transfer_from(caller, contract, amount, Vec::new())
-                .map_err(|_| MarketError::TransferFailed)?;
 
             let deposit_token_amount = amount
                 .checked_mul(self.total_supply())
@@ -233,47 +209,15 @@ mod market {
 
             self.data.mint(caller, deposit_token_amount)
                 .map_err(|_| MarketError::MintFailed)?;
-
+            
             Ok(())
         }
 
-        #[ink(message)]
-        pub fn withdraw_native(
-            &mut self, 
-            deposit_token_amount: u128
-        ) -> Result<(), MarketError> {
-            let caller = self.env().caller();
-            let contract = self.env().account_id();
-
-            if !self.is_native_asset {
-                return Err(MarketError::NotSupported);
-            }
-
-            self.data.burn(caller, deposit_token_amount)
-                .map_err(|_| MarketError::BurnFailed)?;
-
-            let token_amount = deposit_token_amount
-                .checked_mul(self.balance_of(contract))
-                .ok_or(MarketError::Overflow)?
-                .checked_div(self.total_supply())
-                .ok_or(MarketError::Overflow)?;
-
-            let mut wazero: contract_ref!(WrappedAZERO) = self.underlying_asset.into();
-            wazero.withdraw(token_amount)
-                .map_err(|_| MarketError::TransferFailed)?;
-
-            self.env().transfer(caller, token_amount)
-                .map_err(|_| MarketError::TransferFailed)?;
-
-            Ok(())
-        }
-
-        #[ink(message)]
-        pub fn withdraw(
+        fn burn_and_calculate_amount(
             &mut self,
+            caller: AccountId,
             deposit_token_amount: u128,
-        ) -> Result<(), MarketError> {
-            let caller = self.env().caller();
+        ) -> Result<u128, MarketError> {
             let contract = self.env().account_id();
 
             self.data.burn(caller, deposit_token_amount)
@@ -284,17 +228,11 @@ mod market {
                 .ok_or(MarketError::Overflow)?
                 .checked_div(self.total_supply())
                 .ok_or(MarketError::Overflow)?;
-
-            let mut underlying_asset: contract_ref!(PSP22) = self.underlying_asset.into();
-            underlying_asset
-                .transfer(caller, token_amount, Vec::new())
-                .map_err(|_| MarketError::TransferFailed)?;
-
-            Ok(())
+            
+            Ok(token_amount)
         }
 
-        #[ink(message)]
-        pub fn open(
+        fn open_position(
             &mut self,
             collateral_asset: AccountId,
             collateral_amount: Balance,
@@ -302,12 +240,8 @@ mod market {
             leverage: u8,
         ) -> Result<(), MarketError> {
             let caller = self.env().caller();
-            let contract = self.env().account_id();
 
             let mut collateral: contract_ref!(PSP22) = collateral_asset.into();
-            collateral
-                .transfer_from(caller, contract, collateral_amount, Vec::new())
-                .map_err(|_| MarketError::TransferFailed)?;
 
             let (collateral_symbol, collateral_decimals) = self.get_symbol_and_decimals(collateral_asset)?;
             let collateral_price = self.get_price(collateral_symbol)?;
@@ -344,6 +278,101 @@ mod market {
                 .map_err(|_| MarketError::VaultError)?;
 
             self.ids.insert(caller, &id.saturating_add(1));
+
+            Ok(())
+        }
+
+        #[ink(message, payable)]
+        pub fn deposit_native(&mut self) -> Result<(), MarketError> {
+            let caller = self.env().caller();
+
+            if self.underlying_asset != self.wazero {
+                return Err(MarketError::NotSupported);
+            }
+
+            let transferred_amount = self.env().transferred_value();
+            self.wrap_native(transferred_amount)?;
+
+            self.calculate_amount_and_mint(caller, transferred_amount)?;
+
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn deposit(
+            &mut self,
+            amount: u128,
+        ) -> Result<(), MarketError> {
+            let caller = self.env().caller();
+            let contract = self.env().account_id();
+
+            let mut underlying_asset: contract_ref!(PSP22) = self.underlying_asset.into();
+            underlying_asset
+                .transfer_from(caller, contract, amount, Vec::new())
+                .map_err(|_| MarketError::TransferFailed)?;
+
+            self.calculate_amount_and_mint(caller, amount)?;
+
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn withdraw_native(
+            &mut self, 
+            deposit_token_amount: u128
+        ) -> Result<(), MarketError> {
+            let caller = self.env().caller();
+
+            if self.underlying_asset != self.wazero {
+                return Err(MarketError::NotSupported);
+            }
+
+            let token_amount = self.burn_and_calculate_amount(caller, deposit_token_amount)?;
+
+            let mut wazero: contract_ref!(WrappedAZERO) = self.underlying_asset.into();
+            wazero.withdraw(token_amount)
+                .map_err(|_| MarketError::TransferFailed)?;
+
+            self.env().transfer(caller, token_amount)
+                .map_err(|_| MarketError::TransferFailed)?;
+
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn withdraw(
+            &mut self,
+            deposit_token_amount: u128,
+        ) -> Result<(), MarketError> {
+            let caller = self.env().caller();
+
+            let token_amount = self.burn_and_calculate_amount(caller, deposit_token_amount)?;
+
+            let mut underlying_asset: contract_ref!(PSP22) = self.underlying_asset.into();
+            underlying_asset
+                .transfer(caller, token_amount, Vec::new())
+                .map_err(|_| MarketError::TransferFailed)?;
+
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn open(
+            &mut self,
+            collateral_asset: AccountId,
+            collateral_amount: Balance,
+            is_long: bool,
+            leverage: u8,
+        ) -> Result<(), MarketError> {
+            let caller = self.env().caller();
+            let contract = self.env().account_id();
+
+            let mut collateral: contract_ref!(PSP22) = collateral_asset.into();
+            collateral
+                .transfer_from(caller, contract, collateral_amount, Vec::new())
+                .map_err(|_| MarketError::TransferFailed)?;
+
+            self.open_position(collateral_asset, collateral_amount, is_long, leverage)?;
 
             Ok(())
         }
