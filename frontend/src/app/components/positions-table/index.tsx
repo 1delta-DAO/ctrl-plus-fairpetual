@@ -3,6 +3,7 @@ import { FC } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Positions, SymbolsToAssets } from '@/utils/exampleData'
+import { formatDollarAmount, formatPercentage } from '@/utils/formatters'
 import { Position } from '@/utils/types'
 
 interface RowProps {
@@ -10,11 +11,17 @@ interface RowProps {
 }
 
 const Row = ({ position }: RowProps) => {
-  const color = position.type === 'Long' ? 'text-green-500' : 'text-red-500'
+  const positionNetValue = position.collateral * 1.12
+  const positionPnl = positionNetValue - position.collateral
+  const positionPnlPercentage = (positionPnl / position.collateral) * 100
+
+  const longShortcolor = position.type === 'Long' ? 'text-green-500' : 'text-red-500'
+  const pnlColor = positionPnl > 0 ? 'text-green-500' : 'text-red-500'
+
   return (
-    <tr>
+    <tr className="text-sm">
       <td>
-        <div className="flex flex-col text-sm">
+        <div className="flex flex-col">
           <div className="flex items-center gap-1">
             <Image
               src={SymbolsToAssets[position.assetSymbol].icon}
@@ -26,19 +33,31 @@ const Row = ({ position }: RowProps) => {
             <span>{position.assetSymbol}</span>
           </div>
           <div className="flex gap-1">
-            <span className={`font-bold ${color}`}>{position.type}</span>
+            <span className={`font-bold ${longShortcolor}`}>{position.type}</span>
             <span>{position.leverage}x</span>
           </div>
         </div>
       </td>
 
-      <td>-</td>
+      <td>
+        <div className="flex flex-col">
+          <span>{formatDollarAmount(positionNetValue)}</span>
+          <span className={pnlColor}>
+            {formatDollarAmount(positionPnl)} ({formatPercentage(positionPnlPercentage)})
+          </span>
+        </div>
+      </td>
 
-      <td>${position.size.toLocaleString()}</td>
+      <td>{formatDollarAmount(position.size)}</td>
 
-      <td>${position.collateral.toLocaleString()}</td>
+      <td>
+        <div className="flex flex-col">
+          <span>{formatDollarAmount(position.collateral)}</span>
+          <span className="text-gray-400">(- AZERO)</span>
+        </div>
+      </td>
 
-      <td>${position.entryPrice.toLocaleString()}</td>
+      <td>{formatDollarAmount(position.entryPrice)}</td>
 
       <td>-</td>
 
