@@ -4,6 +4,8 @@ pub enum VaultError {
     AmountIsZero,
     AssetAlreadyExist,
     AssetNotFound,
+    CollateralNotFound,
+    DifferentCollateralAsset,
     InsufficientBalance,
     MarketAlreadyExist,
     MarketNotFound,
