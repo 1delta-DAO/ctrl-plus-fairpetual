@@ -165,6 +165,32 @@ mod market {
         }
 
         #[ink(message)]
+        pub fn deposit(
+            &mut self,
+            amount: u128,
+            receiver: AccountId,
+        ) -> Result<(), MarketError> {
+            let caller = self.env().caller();
+            let contract = self.env().account_id();
+
+            let mut underlying_asset: contract_ref!(PSP22) = self.underlying_asset.into();
+            underlying_asset
+                .transfer_from(caller, contract, amount, Vec::new())
+                .map_err(|_| MarketError::TransferFailed)?;
+
+            let deposit_token_amount = amount
+                .checked_mul(self.total_supply())
+                .ok_or(MarketError::Overflow)?
+                .checked_div(self.balance_of(contract))
+                .ok_or(MarketError::Overflow)?;
+
+            self.data.mint(receiver, deposit_token_amount)
+                .map_err(|_| MarketError::MintFailed)?;
+
+            Ok(())
+        }
+
+        #[ink(message)]
         pub fn open(
             &mut self,
             collateral_asset: AccountId,
