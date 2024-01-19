@@ -13,6 +13,7 @@ scale-info = { version = "2.9", default-features = false, features = ["derive"],
 psp22 = { version = "0.2", default-features = false, features = ["ink-as-dependency"] }
 vault = { path = "../vault", default-features = false, features = ["ink-as-dependency"] }
 dia-oracle-getter = { path = "../oracle/oracle-getter", default-features = false }
+wrapped-azero = { path = "../wrapped_azero", default-features = false, features = ["ink-as-dependency"] }
 
 [dev-dependencies]
 ink_e2e = { version = "4.3" }
@@ -22,7 +23,7 @@ path = "lib.rs"
 
 [features]
 default = ["std"]
-std = ["ink/std", "scale/std", "scale-info/std", "psp22/std", "vault/std"]
+std = ["ink/std", "scale/std", "scale-info/std", "psp22/std", "vault/std", "wrapped-azero/std"]
 ink-as-dependency = []
 e2e-tests = []
 
