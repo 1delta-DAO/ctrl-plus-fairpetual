@@ -28,7 +28,7 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <div className="container relative flex flex max-w-[1600px] grow items-start gap-4 py-4">
+      <div className="container relative flex max-w-[1600px] grow items-start gap-4 py-4">
         <div className="flex w-full flex-col items-center gap-4 rounded bg-violet-950 p-4">
           <ChartInfo ChartInfo={chartInfo} />
           <TradingViewChart />

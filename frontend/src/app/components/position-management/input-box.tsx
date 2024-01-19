@@ -1,21 +1,11 @@
 import Image from 'next/image'
 import { FC } from 'react'
 
-const Assets = {
-  AZERO: {
-    name: 'AZERO',
-    image: 'https://avatars.githubusercontent.com/u/54438045?s=200&v=4',
-  },
-  BTC: {
-    name: 'BTC',
-    image:
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png',
-  },
-}
+import { Asset } from '@/utils/types'
 
 interface InputBoxProps {
   topLeftLabel: string
-  asset: keyof typeof Assets
+  asset: Asset
 }
 
 const InputBox: FC<InputBoxProps> = ({ topLeftLabel, asset }) => {
@@ -32,9 +22,9 @@ const InputBox: FC<InputBoxProps> = ({ topLeftLabel, asset }) => {
           type="number"
         />
         <div className="flex w-2/6 items-center justify-end gap-2">
-          <span className="text-2xl">{Assets[asset].name}</span>
+          <span className="text-2xl">{asset.symbol}</span>
           <Image
-            src={Assets[asset].image}
+            src={asset.icon}
             width={23}
             height={23}
             className="rounded-full"

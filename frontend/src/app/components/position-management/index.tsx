@@ -6,6 +6,7 @@ import { FaDownLong } from 'react-icons/fa6'
 import { Button } from '@/components/ui/button'
 import LeverageSlider from '@/components/ui/leverageSlider'
 import Separator from '@/components/ui/separator'
+import { AZERO, BTC } from '@/utils/exampleData'
 
 import InputBox from './input-box'
 
@@ -39,11 +40,11 @@ const PositionManagement: FC = () => {
       </div>
 
       <div className="flex flex-col">
-        <InputBox topLeftLabel="Pay" asset="AZERO" />
+        <InputBox topLeftLabel="Pay" asset={AZERO} />
         <div className="z-10 m-auto mb-[-0.75em] mt-[-0.75em] flex justify-center rounded-full bg-violet-600 p-2">
           <FaDownLong size="20px" />
         </div>
-        <InputBox topLeftLabel={LongOrShortLabel} asset="BTC" />
+        <InputBox topLeftLabel={LongOrShortLabel} asset={BTC} />
       </div>
 
       <LeverageSlider leverage={leverage} setLeverage={setLeverage} />
