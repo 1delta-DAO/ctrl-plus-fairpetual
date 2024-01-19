@@ -6,8 +6,10 @@ import { useInkathon } from '@scio-labs/use-inkathon'
 import { toast } from 'react-hot-toast'
 
 import { Navbar } from '@/app/components/navbar'
+
 import ChartInfo from './components/chart-info'
 import PositionManagement from './components/position-management'
+import PositionsTable from './components/positions-table'
 import TradingViewChart from './components/tradingview-chart'
 
 export default function HomePage() {
@@ -20,18 +22,19 @@ export default function HomePage() {
 
   const chartInfo = {
     price: 1.28,
-    change24: 0.12
+    change24: 0.12,
   }
 
   return (
     <>
       <Navbar />
-      <div className="container relative flex grow flex items-start py-4 max-w-[1600px] gap-4">
-        <div className='w-full flex flex-col p-4 bg-violet-950 rounded gap-4 items-center'>
+      <div className="container relative flex flex max-w-[1600px] grow items-start gap-4 py-4">
+        <div className="flex w-full flex-col items-center gap-4 rounded bg-violet-950 p-4">
           <ChartInfo ChartInfo={chartInfo} />
           <TradingViewChart />
+          <PositionsTable />
         </div>
-        <div className='w-[40rem]'>
+        <div className="w-[40rem]">
           <PositionManagement />
         </div>
       </div>
