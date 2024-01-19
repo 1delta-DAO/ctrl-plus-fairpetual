@@ -120,6 +120,50 @@ mod market {
                 .ok_or(MarketError::Overflow)
         }
 
+        fn calculate_relative_price_change_permille(
+            &self,
+            old_price: u128,
+            new_price: u128,
+        ) -> Result<i128, MarketError> {
+            (new_price as i128 - old_price as i128)
+                .checked_mul(1000)
+                .ok_or(MarketError::Overflow)?
+                .checked_div(old_price as i128)
+                .ok_or(MarketError::Overflow)
+        }
+
+        fn calculate_usd_payout(
+            &self,
+            relative_price_change_permille: i128,
+            leverage: u8,
+            is_long: bool,
+            collateral_usd: u128,
+        ) -> Result<i128, MarketError> {
+            let sign = if !is_long { -1 } else { 1 };
+            relative_price_change_permille
+                .checked_mul(sign)
+                .ok_or(MarketError::Overflow)?
+                .checked_mul(leverage as i128)
+                .ok_or(MarketError::Overflow)?
+                .checked_mul(collateral_usd as i128)
+                .ok_or(MarketError::Overflow)?
+                .checked_div(1000)
+                .ok_or(MarketError::Overflow)
+        }
+
+        fn calculate_asset_amount_from_usd(
+            &self,
+            usd_amount: u128,
+            price: u128,
+            asset_decimals: u8,
+        ) -> Result<u128, MarketError> {
+            usd_amount
+                .checked_mul(asset_decimals as u128)
+                .ok_or(MarketError::Overflow)?
+                .checked_div(price)
+                .ok_or(MarketError::Overflow)
+        }
+
         #[ink(message)]
         pub fn open(
             &mut self,
@@ -171,6 +215,74 @@ mod market {
                 .map_err(|_| MarketError::VaultError)?;
 
             self.ids.insert(caller, &id.saturating_add(1));
+
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn close(&mut self, id: u128) -> Result<(), MarketError> {
+            let caller = self.env().caller();
+
+            let position = self
+                .positions
+                .get((caller, id))
+                .ok_or(MarketError::PositionNotFound)?;
+
+            let (underlying_asset_symbol, underlying_asset_decimals) =
+                self.get_symbol_and_decimals(self.underlying_asset)?;
+            let underlying_price = self.get_price(underlying_asset_symbol)?;
+
+            let (collateral_asset_symbol, collateral_asset_decimals) =
+                self.get_symbol_and_decimals(position.collateral_asset)?;
+            let collateral_price = self.get_price(collateral_asset_symbol)?;
+
+            let relative_price_change_permille = self
+                .calculate_relative_price_change_permille(position.entry_price, underlying_price)?;
+
+            let payout_usd = self.calculate_usd_payout(
+                relative_price_change_permille,
+                position.leverage,
+                position.is_long,
+                position.collateral_usd,
+            )?;
+
+            let mut vault: contract_ref!(CollateralVault) = self.vault.into();
+
+            if payout_usd > 0 {
+                vault
+                    .withdraw(caller, id, position.collateral_amount)
+                    .map_err(|_| MarketError::VaultError)?;
+
+                let payout_amount = self.calculate_asset_amount_from_usd(
+                    payout_usd as u128,
+                    underlying_price,
+                    underlying_asset_decimals,
+                )?;
+
+                let mut asset: contract_ref!(PSP22) = self.underlying_asset.into();
+                asset
+                    .transfer(caller, payout_amount, Vec::new())
+                    .map_err(|_| MarketError::TransferFailed)?;
+            } else if payout_usd < 0 {
+                let rest_collateral_usd: u128 = position
+                    .collateral_usd
+                    .checked_sub(payout_usd.checked_abs().ok_or(MarketError::Overflow)? as u128)
+                    .ok_or(MarketError::Overflow)?;
+
+                let rest_collateral_amount = self.calculate_asset_amount_from_usd(
+                    rest_collateral_usd,
+                    collateral_price,
+                    collateral_asset_decimals,
+                )?;
+
+                vault
+                    .withdraw(caller, id, rest_collateral_amount)
+                    .map_err(|_| MarketError::VaultError)?;
+            } else {
+                vault
+                    .withdraw(caller, id, position.collateral_amount)
+                    .map_err(|_| MarketError::VaultError)?;
+            }
 
             Ok(())
         }

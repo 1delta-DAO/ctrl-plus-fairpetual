@@ -9,6 +9,7 @@ pub enum MarketError {
     MintFailed,
     OracleFailed,
     Overflow,
+    PositionNotFound,
     PSP22MetaDataFailed,
     TransferFailed,
     VaultError,
