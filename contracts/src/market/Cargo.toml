@@ -22,12 +22,9 @@ path = "lib.rs"
 
 [features]
 default = ["std"]
-std = [
-    "ink/std", 
-    "scale/std", 
-    "scale-info/std",
-    "psp22/std",
-    "vault/std",
-]
+std = ["ink/std", "scale/std", "scale-info/std", "psp22/std", "vault/std"]
 ink-as-dependency = []
 e2e-tests = []
+
+[profile.release]
+overflow-checks = false
