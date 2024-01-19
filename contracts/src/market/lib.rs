@@ -78,17 +78,23 @@ mod market {
             }
         }
 
-        fn get_price(&self, symbol: String) -> Result<(u128, u8), MarketError> {
+        fn get_price(&self, symbol: String) -> Result<u128, MarketError> {
             let pair_symbol = format!("{symbol}/USD");
 
             let oracle_getter: contract_ref!(OracleGetters) = self.oracle.into();
+            // DIA price oracle returns USD price with 18 decimals by default
+            let oracle_decimals: u8 = 18;
+            let target_decimals: u8 = 6;
 
             let (_timestamp, price) = oracle_getter
                 .get_latest_price(pair_symbol)
                 .ok_or(MarketError::OracleFailed)?;
 
-            // DIA price oracle returns usd price with 18 decimals by default
-            Ok((price, 18))
+            let abbreviated_price = price
+                .checked_div((10 as u128).pow(oracle_decimals as u32 - target_decimals as u32))
+                .ok_or(MarketError::Overflow);
+
+            abbreviated_price
         }
 
         fn get_symbol_and_decimals(&self, token: AccountId) -> Result<(String, u8), MarketError> {
@@ -101,63 +107,68 @@ mod market {
             Ok((symbol, decimals))
         }
 
+        fn calculate_usd_from_asset_amount(
+            &self,
+            asset_amount: u128,
+            asset_decimals: u8,
+            price: u128,
+        ) -> Result<u128, MarketError> {
+            asset_amount
+                .checked_mul(price)
+                .ok_or(MarketError::Overflow)?
+                .checked_div(asset_decimals as u128)
+                .ok_or(MarketError::Overflow)
+        }
+
         #[ink(message)]
         pub fn open(
             &mut self,
             collateral_asset: AccountId,
             collateral_amount: Balance,
-            receiver: AccountId,
             is_long: bool,
             leverage: u8,
         ) -> Result<(), MarketError> {
             let caller = self.env().caller();
             let contract = self.env().account_id();
 
-            // transfer collateral from caller to contract
             let mut collateral: contract_ref!(PSP22) = collateral_asset.into();
             collateral
                 .transfer_from(caller, contract, collateral_amount, Vec::new())
                 .map_err(|_| MarketError::TransferFailed)?;
 
-            // calculate colateral price
-            let (collateral_symbol, collateral_decimals) =
-                self.get_symbol_and_decimals(collateral_asset)?;
-            let (collateral_price, collateral_price_decimals) =
-                self.get_price(collateral_symbol)?;
-            let collateral_usd = collateral_price * collateral_amount;
-            let collateral_usd_decimals = collateral_decimals + collateral_price_decimals;
+            let (collateral_symbol, collateral_decimals) = self.get_symbol_and_decimals(collateral_asset)?;
+            let collateral_price = self.get_price(collateral_symbol)?;
+            
+            let collateral_usd =
+                self.calculate_usd_from_asset_amount(collateral_amount, collateral_decimals, collateral_price)?;
 
-            // get current price of underlying asset as entry price
-            let symbol = self.token_symbol().ok_or(MarketError::OracleFailed)?;
-            let (entry_price, entry_decimals) = self.get_price(symbol)?;
+            let (symbol, _decimals) = self.get_symbol_and_decimals(self.underlying_asset)?;
+            let entry_price = self.get_price(symbol)?;
 
-            // create position (position id is incremented and used only once)
             let id = self.ids.get(caller).unwrap_or_default();
             self.positions.insert(
                 (caller, id),
                 &Position::new(
                     caller,
                     id,
+                    collateral_amount,
                     collateral_asset,
                     collateral_usd,
-                    collateral_usd_decimals,
                     entry_price,
-                    entry_decimals,
                     leverage,
                     is_long,
                     self.env().block_number(),
                 ),
             );
 
-            // approve and deposit collateral in vault
             collateral
                 .approve(self.vault, collateral_amount)
                 .map_err(|_| MarketError::ApproveFailed)?;
 
             let mut vault: contract_ref!(CollateralVault) = self.vault.into();
             vault
-                .deposit(collateral_asset, caller, id, collateral_amount)
-                .map_err(|_| MarketError::TransferFailed)?;
+                .deposit(caller, id, collateral_asset, collateral_amount)
+                .map_err(|_| MarketError::VaultError)?;
 
             self.ids.insert(caller, &id.saturating_add(1));
 

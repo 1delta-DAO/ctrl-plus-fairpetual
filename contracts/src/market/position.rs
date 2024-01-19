@@ -1,5 +1,5 @@
-use scale::{Decode, Encode};
 use ink::primitives::AccountId;
+use scale::{Decode, Encode};
 
 #[derive(Decode, Encode)]
 #[cfg_attr(
@@ -8,41 +8,38 @@ use ink::primitives::AccountId;
 )]
 #[derive(Debug)]
 pub struct Position {
-    user: AccountId,
-    id: u128,
-    collateral_asset: AccountId,
-    collateral_usd: u128,
-    collateral_usd_decimals: u8,
-    entry_price: u128,
-    entry_price_decimals: u8,
-    leverage: u8,
-    is_long: bool,
-    block_open: u32,
+    pub user: AccountId,
+    pub id: u128,
+    pub collateral_amount: u128,
+    pub collateral_asset: AccountId,
+    pub collateral_usd: u128,
+    pub entry_price: u128,
+    pub leverage: u8,
+    pub is_long: bool,
+    pub block_open: u32,
 }
 
 impl Position {
     pub fn new(
-        user: AccountId, 
+        user: AccountId,
         id: u128,
+        collateral_amount: u128,
         collateral_asset: AccountId,
         collateral_usd: u128,
-        collateral_usd_decimals: u8,
         entry_price: u128,
-        entry_price_decimals: u8, 
-        leverage: u8, 
-        is_long: bool, 
-        block_open: u32
+        leverage: u8,
+        is_long: bool,
+        block_open: u32,
     ) -> Position {
         Position {
-            user, 
-            id, 
+            user,
+            id,
+            collateral_amount,
             collateral_asset,
             collateral_usd,
-            collateral_usd_decimals,
             entry_price,
-            entry_price_decimals,
-            leverage, 
-            is_long, 
+            leverage,
+            is_long,
             block_open,
         }
     }

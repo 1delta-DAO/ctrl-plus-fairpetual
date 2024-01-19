@@ -8,6 +8,8 @@ pub enum MarketError {
     BurnFailed,
     MintFailed,
     OracleFailed,
+    Overflow,
     PSP22MetaDataFailed,
     TransferFailed,
+    VaultError,
 }
