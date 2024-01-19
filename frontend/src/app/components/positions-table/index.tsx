@@ -1,4 +1,62 @@
+import Image from 'next/image'
 import { FC } from 'react'
+
+import { Button } from '@/components/ui/button'
+import { Positions, SymbolsToAssets } from '@/utils/exampleData'
+import { Position } from '@/utils/types'
+
+interface RowProps {
+  position: Position
+}
+
+const Row = ({ position }: RowProps) => {
+  const color = position.type === 'Long' ? 'text-green-500' : 'text-red-500'
+  return (
+    <tr>
+      <td>
+        <div className="flex flex-col text-sm">
+          <div className="flex items-center gap-1">
+            <Image
+              src={SymbolsToAssets[position.assetSymbol].icon}
+              width={17}
+              height={17}
+              className="rounded-full"
+              alt="Asset Icon"
+            />
+            <span>{position.assetSymbol}</span>
+          </div>
+          <div className="flex gap-1">
+            <span className={`font-bold ${color}`}>{position.type}</span>
+            <span>{position.leverage}x</span>
+          </div>
+        </div>
+      </td>
+
+      <td>-</td>
+
+      <td>${position.size.toLocaleString()}</td>
+
+      <td>${position.collateral.toLocaleString()}</td>
+
+      <td>${position.entryPrice.toLocaleString()}</td>
+
+      <td>-</td>
+
+      <td>-</td>
+
+      <td>
+        <Button
+          style={{
+            height: 'auto',
+            padding: '0.5em 1em',
+          }}
+        >
+          Close
+        </Button>
+      </td>
+    </tr>
+  )
+}
 
 const PositionsTable: FC = () => {
   return (
@@ -18,36 +76,9 @@ const PositionsTable: FC = () => {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Long</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>Close</td>
-            </tr>
-            <tr>
-              <td>Short</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>Close</td>
-            </tr>
-            <tr>
-              <td>Long</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>0.00</td>
-              <td>Close</td>
-            </tr>
+            {Positions.map((position, index) => {
+              return <Row key={index} position={position} />
+            })}
           </tbody>
         </table>
       </div>
