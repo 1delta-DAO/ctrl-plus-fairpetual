@@ -5,6 +5,8 @@ mod traits;
 pub use traits::WrappedAZERO;
 pub use wazero::WAZERO_DEPOSIT_SELECTOR;
 
+pub use self::wazero::WazeroRef;
+
 #[ink::contract]
 mod wazero {
     use crate::WrappedAZERO;
