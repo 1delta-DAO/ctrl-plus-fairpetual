@@ -6,6 +6,8 @@ mod position;
 pub use errors::MarketError;
 pub use position::Position;
 
+pub use self::market::MarketRef;
+
 #[ink::contract]
 mod market {
     use crate::{MarketError, Position};
@@ -23,24 +25,6 @@ mod market {
     use psp22::{PSP22Data, PSP22Error, PSP22Metadata, PSP22};
     use vault::CollateralVault;
     use wrapped_azero::{WrappedAZERO, WAZERO_DEPOSIT_SELECTOR};
-
-    #[ink(event)]
-    pub struct Approval {
-        #[ink(topic)]
-        owner: AccountId,
-        #[ink(topic)]
-        spender: AccountId,
-        amount: u128,
-    }
-
-    #[ink(event)]
-    pub struct Transfer {
-        #[ink(topic)]
-        from: Option<AccountId>,
-        #[ink(topic)]
-        to: Option<AccountId>,
-        value: u128,
-    }
 
     #[ink(storage)]
     pub struct Market {
@@ -63,7 +47,6 @@ mod market {
     impl Market {
         #[ink(constructor)]
         pub fn new(
-            supply: u128,
             name: Option<String>,
             symbol: Option<String>,
             decimals: u8,
@@ -73,7 +56,7 @@ mod market {
             wazero: AccountId,
         ) -> Self {
             Self {
-                data: PSP22Data::new(supply, Self::env().caller()),
+                data: PSP22Data::new(0, Self::env().caller()),
                 name,
                 symbol,
                 decimals,
