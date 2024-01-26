@@ -11,6 +11,7 @@ import ChartInfo from './components/chart-info'
 import PositionManagement from './components/position-management'
 import PositionsTable from './components/positions-table'
 import TradingViewChart from './components/tradingview-chart'
+import { ContractInteractions } from './components/contractInteraction'
 
 export default function HomePage() {
   // Display `useInkathon` error messages (optional)
@@ -24,6 +25,8 @@ export default function HomePage() {
     price: 1.28,
     change24: 0.12,
   }
+
+  ContractInteractions()
 
   return (
     <>
