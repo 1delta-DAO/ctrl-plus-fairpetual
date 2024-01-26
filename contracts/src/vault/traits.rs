@@ -34,6 +34,7 @@ pub trait CollateralVault {
         user: AccountId,
         id: u128,
         withdraw_amount: u128,
+        receiver: AccountId,
     ) -> Result<(), VaultError>;
 
     #[ink(message)]

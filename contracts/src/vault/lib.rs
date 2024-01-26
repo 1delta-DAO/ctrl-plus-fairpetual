@@ -90,8 +90,9 @@ mod vault {
                 .get((market, user, id))
                 .unwrap_or_else(|| (0, AccountId::from([0; 32])));
 
-            if prev_collateral_asset != AccountId::from([0; 32]) 
-                && prev_collateral_asset != collateral_asset {
+            if prev_collateral_asset != AccountId::from([0; 32])
+                && prev_collateral_asset != collateral_asset
+            {
                 return Err(VaultError::DifferentCollateralAsset);
             }
 
@@ -117,6 +118,7 @@ mod vault {
             user: AccountId,
             id: u128,
             withdraw_amount: Balance,
+            receiver: AccountId,
         ) -> Result<(), VaultError> {
             let market = self.env().caller();
 
@@ -143,7 +145,7 @@ mod vault {
 
             let mut token: contract_ref!(PSP22) = collateral_asset.into();
             token
-                .transfer(user, withdraw_amount, Vec::new())
+                .transfer(receiver, withdraw_amount, Vec::new())
                 .map_err(|_| VaultError::TransferError)?;
 
             if withdraw_amount == collateral_balance {
@@ -430,7 +432,7 @@ mod vault {
                 .expect("token approve failed");
 
             let withdraw_no_market = build_message::<VaultRef>(vault_acc_id.clone())
-                .call(|vault| vault.withdraw(alice_account, 0, 100));
+                .call(|vault| vault.withdraw(alice_account, 0, 100, alice_account));
             let withdraw_no_market_res = client.call(alice, withdraw_no_market, 0, None).await;
             assert!(
                 withdraw_no_market_res.is_err(),
@@ -445,7 +447,7 @@ mod vault {
                 .expect("add_market failed");
 
             let withdraw_no_asset = build_message::<VaultRef>(vault_acc_id.clone())
-                .call(|vault| vault.withdraw(alice_account, 0, 100));
+                .call(|vault| vault.withdraw(alice_account, 0, 100, alice_account));
             let withdraw_no_asset_res = client.call(alice, withdraw_no_asset, 0, None).await;
             assert!(
                 withdraw_no_asset_res.is_err(),
@@ -460,7 +462,7 @@ mod vault {
                 .expect("add_asset failed");
 
             let withdraw_zero_amount = build_message::<VaultRef>(vault_acc_id.clone())
-                .call(|vault| vault.withdraw(alice_account, 0, 0));
+                .call(|vault| vault.withdraw(alice_account, 0, 0, alice_account));
             let withdraw_zero_amount_res = client.call(alice, withdraw_zero_amount, 0, None).await;
             assert!(withdraw_zero_amount_res.is_err(), "withdraw zero amount");
 
@@ -472,8 +474,9 @@ mod vault {
                 .await
                 .expect("deposit failed");
 
-            let withdraw_too_much = build_message::<VaultRef>(vault_acc_id.clone())
-                .call(|vault| vault.withdraw(alice_account, 0, withdraw_too_large_amount));
+            let withdraw_too_much = build_message::<VaultRef>(vault_acc_id.clone()).call(|vault| {
+                vault.withdraw(alice_account, 0, withdraw_too_large_amount, alice_account)
+            });
             let withdraw_too_much_res = client.call(alice, withdraw_too_much, 0, None).await;
             assert!(
                 withdraw_too_much_res.is_err(),
@@ -481,7 +484,7 @@ mod vault {
             );
 
             let withdraw = build_message::<VaultRef>(vault_acc_id.clone())
-                .call(|vault| vault.withdraw(alice_account, 0, withdraw_amount));
+                .call(|vault| vault.withdraw(alice_account, 0, withdraw_amount, alice_account));
             let withdraw_res = client.call(alice, withdraw, 0, None).await;
             assert!(withdraw_res.is_ok(), "withdraw should succeed");
 
@@ -502,15 +505,17 @@ mod vault {
                 "token balance should equal: balance - deposit_amount + withdraw_amount"
             );
 
-            let withdraw_rest = build_message::<VaultRef>(vault_acc_id.clone())
-                .call(|vault| vault.withdraw(alice_account, 0, withdraw_rest_amount));
+            let withdraw_rest = build_message::<VaultRef>(vault_acc_id.clone()).call(|vault| {
+                vault.withdraw(alice_account, 0, withdraw_rest_amount, alice_account)
+            });
             let withdraw_rest_res = client.call(alice, withdraw_rest, 0, None).await;
             assert!(withdraw_rest_res.is_ok(), "withdraw rest should succeed");
 
             let user_collateral_rest_res =
                 client.call_dry_run(alice, &user_collateral, 0, None).await;
-            let (user_collateral_rest_res_balance, _) =
-                user_collateral_rest_res.return_value().unwrap_or_else(|| (0, AccountId::from([0; 32])));
+            let (user_collateral_rest_res_balance, _) = user_collateral_rest_res
+                .return_value()
+                .unwrap_or_else(|| (0, AccountId::from([0; 32])));
             assert!(user_collateral_rest_res_balance == deposit_amount - withdraw_amount - withdraw_rest_amount, "user collateral should equal: deposit_amount - withdraw_amount - withdraw_rest_amount");
 
             let token_balance_of_rest_res =
