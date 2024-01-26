@@ -27,14 +27,14 @@ mod manager {
 
     impl Manager {
         #[ink(constructor)]
-        pub fn new(version: u8, oracle: AccountId, wazero: AccountId, vault: AccountId) -> Self {
+        pub fn new(version: u8, oracle: AccountId, wazero: AccountId, vault: AccountId, markets: Vec<AccountId>) -> Self {
             Self {
                 version,
                 owner: Self::env().caller(),
                 oracle,
                 wazero,
                 vault,
-                markets: Default::default(),
+                markets: markets,
                 incremented_id: 0,
             }
         }
@@ -93,6 +93,20 @@ mod manager {
             let market = <MarketRef as ToAccountId<super::manager::Environment>>::to_account_id(
                 &market_ref,
             );
+
+            self.markets.push(market);
+
+            Ok(market)
+        }
+
+        #[ink(message)]
+        pub fn add_market(
+            &mut self,
+            market: AccountId,
+        ) -> Result<AccountId, ManagerError> {
+            if self.env().caller() != self.owner {
+                return Err(ManagerError::NotOwner);
+            }
 
             self.markets.push(market);
 
