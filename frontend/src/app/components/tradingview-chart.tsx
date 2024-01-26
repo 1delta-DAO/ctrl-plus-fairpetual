@@ -23,6 +23,7 @@ function TradingViewChart() {
           "save_image": false,
           "support_host": "https://www.tradingview.com"
         }`
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     container.current.appendChild(script)
   }, [])
