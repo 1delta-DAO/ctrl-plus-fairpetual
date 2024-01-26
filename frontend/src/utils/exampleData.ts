@@ -12,9 +12,16 @@ export const AZERO: Asset = {
   icon: 'https://avatars.githubusercontent.com/u/54438045?s=200&v=4',
 }
 
+export const wAZERO: Asset = {
+  symbol: 'wAZERO',
+  name: 'Wrapped Aleph Zero',
+  icon: 'https://avatars.githubusercontent.com/u/54438045?s=200&v=4',
+}
+
 export const SymbolsToAssets: { [symbol: string]: Asset } = {
   [BTC.symbol]: BTC,
   [AZERO.symbol]: AZERO,
+  [wAZERO.symbol]: wAZERO,
 }
 
 export const Positions: Position[] = [

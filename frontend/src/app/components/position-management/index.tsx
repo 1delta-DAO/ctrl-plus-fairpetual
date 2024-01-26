@@ -6,6 +6,7 @@ import { FaDownLong } from 'react-icons/fa6'
 import { Button } from '@/components/ui/button'
 import LeverageSlider from '@/components/ui/leverageSlider'
 import Separator from '@/components/ui/separator'
+import { Switcher, SwitcherButton } from '@/components/ui/switcher'
 import { AZERO, BTC } from '@/utils/exampleData'
 
 import InputBox from './input-box'
@@ -14,37 +15,39 @@ const PositionManagement: FC = () => {
   const [long, setLong] = useState(true)
   const [leverage, setLeverage] = useState<EuiRangeProps['value']>('2')
 
-  const longShortCommon = 'rounded-[0.35em] py-2 w-full text-center transition-all'
-  const longShortActive = 'bg-violet-600 font-bold'
-  const longShortInactive = 'text-gray-400 cursor-pointer hover:bg-violet-700'
-
-  const longShortCss = (long: boolean) => {
-    if (long) {
-      return longShortCommon + ' ' + longShortActive
-    } else {
-      return longShortCommon + ' ' + longShortInactive
-    }
-  }
-
   const LongOrShortLabel = long ? 'Long' : 'Short'
+
+  const assets = [AZERO, BTC]
+  const [assetIn, setAssetIn] = useState(assets[0])
+  const [assetOut, setAssetOut] = useState(assets[1])
 
   return (
     <div className="flex w-full flex-col gap-4 rounded bg-violet-950 p-4">
-      <div className="flex w-full rounded-[0.35em] bg-violet-800 p-2">
-        <div className={longShortCss(long)} onClick={() => setLong(true)}>
+      <Switcher>
+        <SwitcherButton active={long} onClick={() => setLong(true)}>
           Long
-        </div>
-        <div className={longShortCss(!long)} onClick={() => setLong(false)}>
+        </SwitcherButton>
+        <SwitcherButton active={!long} onClick={() => setLong(false)}>
           Short
-        </div>
-      </div>
+        </SwitcherButton>
+      </Switcher>
 
       <div className="flex flex-col">
-        <InputBox topLeftLabel="Pay" asset={AZERO} />
+        <InputBox
+          topLeftLabel="Pay"
+          selectedAssetSymbol={assetIn.symbol}
+          assets={assets}
+          onSetAsset={setAssetIn}
+        />
         <div className="z-10 m-auto mb-[-0.75em] mt-[-0.75em] flex justify-center rounded-full bg-violet-600 p-2">
           <FaDownLong size="20px" />
         </div>
-        <InputBox topLeftLabel={LongOrShortLabel} asset={BTC} />
+        <InputBox
+          topLeftLabel={LongOrShortLabel}
+          selectedAssetSymbol={assetOut.symbol}
+          assets={assets}
+          onSetAsset={setAssetOut}
+        />
       </div>
 
       <LeverageSlider leverage={leverage} setLeverage={setLeverage} />
