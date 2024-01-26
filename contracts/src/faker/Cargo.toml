@@ -13,7 +13,7 @@ scale = { package = "parity-scale-codec", version = "3", default-features = fals
 scale-info = { version = "2.6", default-features = false, features = [
     "derive",
 ], optional = true }
-dia-oracle-getter = { path = "../oracle-getter", default-features = false }
+dia-oracle-getter = { path = "../oracle/oracle-getter", default-features = false }
 
 [dev-dependencies]
 ink_e2e = "4.3.0"

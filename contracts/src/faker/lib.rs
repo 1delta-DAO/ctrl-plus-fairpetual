@@ -1,5 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
+pub use self::faker::FakerRef;
+
 #[ink::contract]
 mod faker {
     use dia_oracle_getter::OracleGetters;
