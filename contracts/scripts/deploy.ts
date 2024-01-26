@@ -43,6 +43,8 @@ const deploy_psp22 = async () => {
   await writeContractAddresses(chain.network, {
     psp22,
   })
+
+  return psp22.address
 }
 
 const deploy_wazero = async () => {
@@ -55,6 +57,22 @@ const deploy_wazero = async () => {
   await writeContractAddresses(chain.network, {
     wrapped_azero,
   })
+
+  return wrapped_azero.address
+}
+
+const deploy_faker = async () => {
+  const initParams = await initPolkadotJs()
+  const { api, chain, account } = initParams
+
+  const { abi, wasm } = await getDeploymentData('faker')
+  const faker = await deployContract(api, account, abi, wasm, 'new', [])
+
+  await writeContractAddresses(chain.network, {
+    faker,
+  })
+
+  return faker.address
 }
 
 const deploy_vault = async () => {
@@ -67,21 +85,49 @@ const deploy_vault = async () => {
   await writeContractAddresses(chain.network, {
     vault,
   })
+
+  return vault.address
 }
 
-const deploy_market = async () => {
+/*
+  params:
+    name: Option<String>,
+    symbol: Option<String>,
+    decimals: u8,
+    underlying_asset: AccountId,
+    oracle: AccountId,
+    vault: AccountId,
+    wazero: AccountId,
+    liquidation_threshold: i8,
+    liquidation_penalty: u8,
+    protocol_fee: u8,
+*/
+const deploy_market = async (underlying_asset, oracle, vault, wazero) => {
   const initParams = await initPolkadotJs()
   const { api, chain, account } = initParams
 
   const { abi, wasm } = await getDeploymentData('market')
-  const market = await deployContract(api, account, abi, wasm, 'default', [])
+  const market = await deployContract(api, account, abi, wasm, 'new', [
+    "Wrapped AZERO",
+    "WAZERO",
+    12,
+    underlying_asset,
+    oracle,
+    vault,
+    wazero,
+    -80,
+    10,
+    5,
+  ])
 
   await writeContractAddresses(chain.network, {
     market,
   })
+
+  return market.address
 }
 
-const deploy_manager = async (wazeroAddress, vaultAddress) => {
+const deploy_manager = async (wazeroAddress, vaultAddress, marketAddresses) => {
   let oracleAddress = ''
   if (chainId == 'alephzero') {
     oracleAddress = PRICE_ORACLE_ADDRESS_MAINNET
@@ -94,7 +140,13 @@ const deploy_manager = async (wazeroAddress, vaultAddress) => {
 
   const { abi, wasm } = await getDeploymentData('manager')
   const version = 1
-  const manager = await deployContract(api, account, abi, wasm, 'new', [version, oracleAddress, wazeroAddress, vaultAddress])
+  const manager = await deployContract(api, account, abi, wasm, 'new', [
+    version, 
+    oracleAddress, 
+    wazeroAddress, 
+    vaultAddress,
+    marketAddresses,
+  ])
 
   await writeContractAddresses(chain.network, {
     manager,
@@ -103,11 +155,12 @@ const deploy_manager = async (wazeroAddress, vaultAddress) => {
 
 const main = async () => {
   try {
-    await deploy_psp22()
     const wazeroAddress = await deploy_wazero()
+    const fakerAddress = await deploy_faker()
     const vaultAddress = await deploy_vault()
-    await deploy_market()
-    await deploy_manager(wazeroAddress, vaultAddress)
+    const markets = []
+    markets.push(await deploy_market(wazeroAddress, fakerAddress, vaultAddress, wazeroAddress))
+    await deploy_manager(wazeroAddress, vaultAddress, markets)
 
     console.log('\nDeployments completed successfully')
   } catch (error) {
