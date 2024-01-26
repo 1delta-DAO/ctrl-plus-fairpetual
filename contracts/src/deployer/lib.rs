@@ -7,14 +7,14 @@ pub use errors::DeployerError;
 #[ink::contract]
 mod deployer {
     use ink::{
+        contract_ref,
         prelude::{string::String, vec::Vec},
         ToAccountId,
-        contract_ref
-    };    
-    use vault::VaultRef;
+    };
     use market::MarketRef;
-    use wrapped_azero::WazeroRef;
     use psp22::PSP22Metadata;
+    use vault::VaultRef;
+    use wrapped_azero::WazeroRef;
 
     use crate::DeployerError;
 
@@ -31,33 +31,37 @@ mod deployer {
 
     impl Deployer {
         #[ink(constructor)]
-        pub fn new(
-            version: u8,
-            oracle: AccountId,
-            wazero_hash: Hash,
-            vault_hash: Hash
-        ) -> Self {
+        pub fn new(version: u8, oracle: AccountId, wazero_hash: Hash, vault_hash: Hash) -> Self {
             let wazero_ref = WazeroRef::new()
                 .endowment(0)
                 .code_hash(wazero_hash)
-                .salt_bytes(&[version.to_le_bytes().as_ref(), Self::env().caller().as_ref()].concat()[..4])
+                .salt_bytes(
+                    &[
+                        version.to_le_bytes().as_ref(),
+                        Self::env().caller().as_ref(),
+                    ]
+                    .concat()[..4],
+                )
                 .instantiate();
 
-            let wazero =
-                <WazeroRef as ToAccountId<
-                    super::deployer::Environment,
-                >>::to_account_id(&wazero_ref);
+            let wazero = <WazeroRef as ToAccountId<super::deployer::Environment>>::to_account_id(
+                &wazero_ref,
+            );
 
             let vault_ref = VaultRef::new()
                 .endowment(0)
                 .code_hash(vault_hash)
-                .salt_bytes(&[version.to_le_bytes().as_ref(), Self::env().caller().as_ref()].concat()[..4])
+                .salt_bytes(
+                    &[
+                        version.to_le_bytes().as_ref(),
+                        Self::env().caller().as_ref(),
+                    ]
+                    .concat()[..4],
+                )
                 .instantiate();
 
             let vault =
-                <VaultRef as ToAccountId<
-                    super::deployer::Environment,
-                >>::to_account_id(&vault_ref);
+                <VaultRef as ToAccountId<super::deployer::Environment>>::to_account_id(&vault_ref);
 
             Self {
                 version,
@@ -84,6 +88,9 @@ mod deployer {
             name: Option<String>,
             symbol: Option<String>,
             underlying_asset: AccountId,
+            liquidation_threshold: i8,
+            liquidation_penalty: u8,
+            protocol_fee: u8,
         ) -> Result<(), DeployerError> {
             if self.env().caller() != self.owner {
                 return Err(DeployerError::NotOwner);
@@ -98,16 +105,24 @@ mod deployer {
                 self.oracle,
                 self.vault,
                 self.wazero,
+                liquidation_threshold,
+                liquidation_penalty,
+                protocol_fee,
             )
-                .endowment(0)
-                .code_hash(market_hash)
-                .salt_bytes(&[self.version.to_le_bytes().as_ref(), Self::env().caller().as_ref()].concat()[..4])
-                .instantiate();
+            .endowment(0)
+            .code_hash(market_hash)
+            .salt_bytes(
+                &[
+                    self.version.to_le_bytes().as_ref(),
+                    Self::env().caller().as_ref(),
+                ]
+                .concat()[..4],
+            )
+            .instantiate();
 
-            let market =
-                <MarketRef as ToAccountId<
-                    super::deployer::Environment,
-                >>::to_account_id(&market_ref);
+            let market = <MarketRef as ToAccountId<super::deployer::Environment>>::to_account_id(
+                &market_ref,
+            );
 
             self.markets.push(market);
 
