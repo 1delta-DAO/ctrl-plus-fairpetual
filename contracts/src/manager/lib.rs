@@ -2,24 +2,20 @@
 
 mod errors;
 
-pub use errors::DeployerError;
+pub use errors::ManagerError;
 
 #[ink::contract]
-mod deployer {
+mod manager {
     use ink::{
-        contract_ref,
-        prelude::{string::String, vec::Vec},
-        ToAccountId,
+        contract_ref, prelude::{string::String, vec::Vec}, ToAccountId
     };
     use market::MarketRef;
     use psp22::PSP22Metadata;
-    use vault::VaultRef;
-    use wrapped_azero::WazeroRef;
 
-    use crate::DeployerError;
+    use crate::ManagerError;
 
     #[ink(storage)]
-    pub struct Deployer {
+    pub struct Manager {
         version: u8,
         owner: AccountId,
         oracle: AccountId,
@@ -29,40 +25,9 @@ mod deployer {
         incremented_id: u128,
     }
 
-    impl Deployer {
+    impl Manager {
         #[ink(constructor)]
-        pub fn new(version: u8, oracle: AccountId, wazero_hash: Hash, vault_hash: Hash) -> Self {
-            let wazero_ref = WazeroRef::new()
-                .endowment(0)
-                .code_hash(wazero_hash)
-                .salt_bytes(
-                    &[
-                        version.to_le_bytes().as_ref(),
-                        Self::env().caller().as_ref(),
-                    ]
-                    .concat()[..4],
-                )
-                .instantiate();
-
-            let wazero = <WazeroRef as ToAccountId<super::deployer::Environment>>::to_account_id(
-                &wazero_ref,
-            );
-
-            let vault_ref = VaultRef::new()
-                .endowment(0)
-                .code_hash(vault_hash)
-                .salt_bytes(
-                    &[
-                        version.to_le_bytes().as_ref(),
-                        Self::env().caller().as_ref(),
-                    ]
-                    .concat()[..4],
-                )
-                .instantiate();
-
-            let vault =
-                <VaultRef as ToAccountId<super::deployer::Environment>>::to_account_id(&vault_ref);
-
+        pub fn new(version: u8, oracle: AccountId, wazero: AccountId, vault: AccountId) -> Self {
             Self {
                 version,
                 owner: Self::env().caller(),
@@ -73,6 +38,11 @@ mod deployer {
                 incremented_id: 0,
             }
         }
+
+        #[ink(message)]
+        pub fn view_markets(&self) -> Vec<AccountId> {
+            self.markets.clone()
+        } 
 
         #[ink(message)]
         pub fn increment_id(&mut self) -> u128 {
@@ -91,9 +61,9 @@ mod deployer {
             liquidation_threshold: i8,
             liquidation_penalty: u8,
             protocol_fee: u8,
-        ) -> Result<(), DeployerError> {
+        ) -> Result<AccountId, ManagerError> {
             if self.env().caller() != self.owner {
-                return Err(DeployerError::NotOwner);
+                return Err(ManagerError::NotOwner);
             }
 
             let asset: contract_ref!(PSP22Metadata) = underlying_asset.into();
@@ -120,13 +90,13 @@ mod deployer {
             )
             .instantiate();
 
-            let market = <MarketRef as ToAccountId<super::deployer::Environment>>::to_account_id(
+            let market = <MarketRef as ToAccountId<super::manager::Environment>>::to_account_id(
                 &market_ref,
             );
 
             self.markets.push(market);
 
-            Ok(())
+            Ok(market)
         }
     }
 }

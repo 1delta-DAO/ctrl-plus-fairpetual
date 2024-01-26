@@ -1,5 +1,5 @@
 [package]
-name = "deployer"
+name = "manager"
 version = "0.0.1"
 authors = ["1delta <volkan@1delta.io>"]
 edition = "2021"
