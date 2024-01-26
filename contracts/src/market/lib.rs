@@ -51,6 +51,27 @@ mod market {
 
     impl Market {
         #[ink(constructor)]
+        pub fn default() -> Self {
+            Self {
+                data: PSP22Data::new(0, Self::env().caller()),
+                name: Default::default(),
+                symbol: Default::default(),
+                decimals: Default::default(),
+                owner: Self::env().caller(),
+                positions: Default::default(),
+                ids_per_user: Default::default(),
+                new_id: Default::default(),
+                underlying_asset: AccountId::from([0; 32]),
+                oracle: AccountId::from([0; 32]),
+                vault: AccountId::from([0; 32]),
+                wazero: AccountId::from([0; 32]),
+                liquidation_threshold: Default::default(),
+                liquidation_penalty: Default::default(),
+                protocol_fee: Default::default(),
+            }
+        }
+
+        #[ink(constructor)]
         pub fn new(
             name: Option<String>,
             symbol: Option<String>,
@@ -80,6 +101,30 @@ mod market {
                 liquidation_penalty,
                 protocol_fee,
             }
+        }
+
+        #[ink(message)]
+        pub fn view_underlying_asset(&self) -> AccountId {
+            self.underlying_asset 
+        }
+
+        #[ink(message)]
+        pub fn view_position(&self, user: AccountId, id: u128) -> Option<Position> {
+            self.positions.get((user, id)) 
+        }
+
+        #[ink(message)]
+        pub fn view_positions(&self, user: AccountId) -> Vec<Position> {
+            let ids_for_user = self.ids_per_user.get(user).unwrap_or_default();
+            let mut positions = Vec::new();
+
+            for id in ids_for_user {
+                if let Some(position) = self.positions.get((user, id)) {
+                    positions.push(position);
+                }
+            }
+
+            positions
         }
 
         fn get_price(&self, symbol: String) -> Result<u128, MarketError> {
