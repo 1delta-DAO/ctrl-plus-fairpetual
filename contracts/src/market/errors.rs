@@ -8,6 +8,7 @@ pub enum MarketError {
     BurnFailed,
     LangError,
     MintFailed,
+    NotLiquidatable,
     NotSupported,
     OracleFailed,
     Overflow,
