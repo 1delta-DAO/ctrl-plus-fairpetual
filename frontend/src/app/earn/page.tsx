@@ -20,7 +20,7 @@ const Subtitle: FC<{
   children: React.ReactNode
 }> = ({ children }) => <h2 className="text-md text-left text-white">{children}</h2>
 
-export default function HomePage() {
+export default function Earn() {
   // Display `useInkathon` error messages (optional)
   const { error } = useInkathon()
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 
 import { EuiRangeProps } from '@elastic/eui'
 import { FaDownLong } from 'react-icons/fa6'
@@ -7,19 +7,28 @@ import { Button } from '@/components/ui/button'
 import LeverageSlider from '@/components/ui/leverageSlider'
 import Separator from '@/components/ui/separator'
 import { Switcher, SwitcherButton } from '@/components/ui/switcher'
-import { AZERO, BTC } from '@/utils/exampleData'
+import { Market } from '@/utils/types'
 
 import InputBox from './input-box'
 
-const PositionManagement: FC = () => {
+interface PositionManagementProps {
+  markets: Market[] | undefined
+}
+
+const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
   const [long, setLong] = useState(true)
   const [leverage, setLeverage] = useState<EuiRangeProps['value']>('2')
 
   const LongOrShortLabel = long ? 'Long' : 'Short'
 
-  const assets = [AZERO, BTC]
-  const [assetIn, setAssetIn] = useState(assets[0])
-  const [assetOut, setAssetOut] = useState(assets[1])
+  const [assetIn, setAssetIn] = useState<Market | undefined>(undefined)
+  const [assetOut, setAssetOut] = useState<Market | undefined>(undefined)
+
+  useEffect(() => {
+    if (!markets?.length) return
+    setAssetIn(markets[0])
+    setAssetOut(markets[1] ?? markets[0])
+  }, [markets])
 
   return (
     <div className="flex w-full flex-col gap-4 rounded bg-violet-950 p-4">
@@ -35,8 +44,8 @@ const PositionManagement: FC = () => {
       <div className="flex flex-col">
         <InputBox
           topLeftLabel="Pay"
-          selectedAssetSymbol={assetIn.symbol}
-          assets={assets}
+          selectedAssetSymbol={assetIn?.symbol}
+          markets={markets}
           onSetAsset={setAssetIn}
         />
         <div className="z-10 m-auto mb-[-0.75em] mt-[-0.75em] flex justify-center rounded-full bg-violet-600 p-2">
@@ -44,8 +53,8 @@ const PositionManagement: FC = () => {
         </div>
         <InputBox
           topLeftLabel={LongOrShortLabel}
-          selectedAssetSymbol={assetOut.symbol}
-          assets={assets}
+          selectedAssetSymbol={assetOut?.symbol}
+          markets={markets}
           onSetAsset={setAssetOut}
         />
       </div>

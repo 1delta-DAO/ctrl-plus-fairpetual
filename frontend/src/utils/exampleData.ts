@@ -1,41 +1,21 @@
-import { Asset, Position, PositionType } from './types'
+import { Position, PositionType } from './types'
 
-export const BTC: Asset = {
-  symbol: 'BTC',
-  name: 'Bitcoin',
-  icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png',
-}
+// export const SymbolsToAssets: { [symbol: string]: Asset } = {
+//   [BTC.symbol]: BTC,
+//   [AZERO.symbol]: AZERO,
+//   [wAZERO.symbol]: wAZERO,
+// }
 
-export const AZERO: Asset = {
-  symbol: 'AZERO',
-  name: 'Aleph Zero',
-  icon: 'https://avatars.githubusercontent.com/u/54438045?s=200&v=4',
-}
-
-export const wAZERO: Asset = {
-  symbol: 'wAZERO',
-  name: 'Wrapped Aleph Zero',
-  icon: 'https://avatars.githubusercontent.com/u/54438045?s=200&v=4',
-}
-
-export const SymbolsToAssets: { [symbol: string]: Asset } = {
-  [BTC.symbol]: BTC,
-  [AZERO.symbol]: AZERO,
-  [wAZERO.symbol]: wAZERO,
+export const SymbolsToIcons: { [symbol: string]: string } = {
+  // [BTC.symbol]: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png',
+  AZERO: 'https://avatars.githubusercontent.com/u/54438045?s=200&v=4',
+  WAZERO: 'https://avatars.githubusercontent.com/u/54438045?s=200&v=4',
 }
 
 export const Positions: Position[] = [
   {
-    type: PositionType.LONG,
-    assetSymbol: BTC.symbol,
-    leverage: 2,
-    size: 14723,
-    collateral: 7361.5,
-    entryPrice: 38195,
-  },
-  {
     type: PositionType.SHORT,
-    assetSymbol: AZERO.symbol,
+    assetSymbol: 'WAZERO',
     leverage: 5,
     size: 3264,
     collateral: 652.8,

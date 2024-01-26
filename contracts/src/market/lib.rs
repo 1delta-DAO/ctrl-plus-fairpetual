@@ -104,13 +104,22 @@ mod market {
         }
 
         #[ink(message)]
+        pub fn view_market_data(&self) -> (String, String, u8) {
+            (
+                self.name.clone().unwrap(),
+                self.symbol.clone().unwrap(),
+                self.decimals,
+            )
+        }
+
+        #[ink(message)]
         pub fn view_underlying_asset(&self) -> AccountId {
-            self.underlying_asset 
+            self.underlying_asset
         }
 
         #[ink(message)]
         pub fn view_position(&self, user: AccountId, id: u128) -> Option<Position> {
-            self.positions.get((user, id)) 
+            self.positions.get((user, id))
         }
 
         #[ink(message)]
