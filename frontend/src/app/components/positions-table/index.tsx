@@ -2,7 +2,7 @@ import Image from 'next/image'
 import { FC } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Positions, SymbolsToIcons } from '@/utils/exampleData'
+import { Positions, SymbolsToIcons } from '@/utils/constants'
 import { formatDollarAmount, formatPercentage } from '@/utils/formatters'
 import { Position } from '@/utils/types'
 

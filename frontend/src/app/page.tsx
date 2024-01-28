@@ -28,8 +28,6 @@ export default function Home() {
 
   const { markets, marketsAreLoading } = useFetchMarkets()
 
-  console.log(markets)
-
   return (
     <>
       <Navbar />

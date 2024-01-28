@@ -1,4 +1,4 @@
-import { Position, PositionType } from './types'
+import { Market, Position, PositionType } from './types'
 
 // export const SymbolsToAssets: { [symbol: string]: Asset } = {
 //   [BTC.symbol]: BTC,
@@ -22,3 +22,10 @@ export const Positions: Position[] = [
     entryPrice: 1.69,
   },
 ]
+
+export const AZERO: Market = {
+  address: '',
+  symbol: 'AZERO',
+  name: 'Aleph Zero',
+  decimals: 0,
+}

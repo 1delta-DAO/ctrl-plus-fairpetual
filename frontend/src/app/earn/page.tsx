@@ -8,9 +8,11 @@ import { toast } from 'react-hot-toast'
 import { Navbar } from '@/app/components/navbar'
 import { Button } from '@/components/ui/button'
 import { Switcher, SwitcherButton } from '@/components/ui/switcher'
-import { AZERO, wAZERO } from '@/utils/exampleData'
+import { AZERO } from '@/utils/constants'
+import { Market } from '@/utils/types'
 
 import InputBox from '../components/position-management/input-box'
+import { useFetchMarkets } from '../hooks/useFetchMarkets'
 
 const Title: FC<{
   children: React.ReactNode
@@ -28,8 +30,12 @@ export default function Earn() {
     toast.error(error.message)
   }, [error])
 
-  const assets = [AZERO, wAZERO]
-  const [asset, setAsset] = useState(assets[0])
+  const { markets, marketsAreLoading } = useFetchMarkets()
+
+  const WAZERO = markets?.find((market) => market.symbol === 'WAZERO')
+
+  const [asset, setAsset] = useState<Market>(AZERO)
+  const assets = WAZERO ? [AZERO, WAZERO] : []
 
   const [isDeposit, setIsDeposit] = useState(true)
 
@@ -60,7 +66,7 @@ export default function Earn() {
             <InputBox
               topLeftLabel={inputLabel}
               selectedAssetSymbol={asset.symbol}
-              assets={assets}
+              markets={assets}
               onSetAsset={setAsset}
             />
             <Button className="rounded-[0.35em]">

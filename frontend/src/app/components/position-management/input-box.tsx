@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { SymbolsToIcons } from '@/utils/exampleData'
+import { SymbolsToIcons } from '@/utils/constants'
 import { Market } from '@/utils/types'
 
 interface InputBoxProps {
