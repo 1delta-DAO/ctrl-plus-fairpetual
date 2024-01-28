@@ -17,7 +17,7 @@ export const useFetchMarkets = () => {
   const { api } = useInkathon()
   const { contract: managerContract } = useRegisteredContract(ContractIds.Manager)
   const { contract: marketContract } = useRegisteredContract(ContractIds.Market)
-  const [marketsAreLoading, setMarketsAreLoading] = useState<boolean>()
+  const [marketsAreLoading, setMarketsAreLoading] = useState<boolean>(false)
   const [markets, setMarkets] = useState<Market[]>()
 
   const fetchMarkets = async () => {

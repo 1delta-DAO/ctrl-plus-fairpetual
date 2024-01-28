@@ -12,6 +12,7 @@ import { AZERO } from '@/utils/constants'
 import { Market } from '@/utils/types'
 
 import InputBox from '../components/position-management/input-box'
+import { useEarnDeposit, useEarnWithdraw } from '../hooks/useEarn'
 import { useFetchMarkets } from '../hooks/useFetchMarkets'
 
 const Title: FC<{
@@ -34,6 +35,14 @@ export default function Earn() {
 
   const WAZERO = markets?.find((market) => market.symbol === 'WAZERO')
 
+  const { deposit, depositNative, depositIsLoading, depositNativeIsLoading } = useEarnDeposit({
+    marketAddress: WAZERO?.address || '',
+  })
+
+  const { withdraw, withdrawNative, withdrawIsLoading, withdrawNativeIsLoading } = useEarnWithdraw({
+    marketAddress: WAZERO?.address || '',
+  })
+
   const [asset, setAsset] = useState<Market>(AZERO)
   const assets = WAZERO ? [AZERO, WAZERO] : []
 
@@ -44,6 +53,14 @@ export default function Earn() {
   const buttonLabel = isDeposit
     ? `Deposit${toWrapOrUnwrap ? ' & Wrap' : ''}`
     : `Withdraw${toWrapOrUnwrap ? ' & Unwrap' : ''}`
+
+  const functionToCall = isDeposit
+    ? asset === AZERO
+      ? depositNative
+      : deposit
+    : asset === AZERO
+      ? withdrawNative
+      : withdraw
 
   return (
     <>
@@ -69,7 +86,7 @@ export default function Earn() {
               markets={assets}
               onSetAsset={setAsset}
             />
-            <Button className="rounded-[0.35em]">
+            <Button className="rounded-[0.35em]" onClick={() => functionToCall({ amount: 1 })}>
               <span className="text-[1.1em] font-bold">{buttonLabel}</span>
             </Button>
           </div>
