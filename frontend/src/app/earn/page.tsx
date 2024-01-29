@@ -47,6 +47,7 @@ export default function Earn() {
   const assets = WAZERO ? [AZERO, WAZERO] : []
 
   const [isDeposit, setIsDeposit] = useState(true)
+  const [amount, setAmount] = useState<string>('')
 
   const toWrapOrUnwrap = asset === AZERO
   const inputLabel = isDeposit ? 'Send' : 'Receive'
@@ -84,9 +85,14 @@ export default function Earn() {
               topLeftLabel={inputLabel}
               selectedAssetSymbol={asset.symbol}
               markets={assets}
+              amount={amount}
+              setAmount={setAmount}
               onSetAsset={setAsset}
             />
-            <Button className="rounded-[0.35em]" onClick={() => functionToCall({ amount: 1 })}>
+            <Button
+              className="rounded-[0.35em]"
+              onClick={() => functionToCall({ amount: Number(amount) })}
+            >
               <span className="text-[1.1em] font-bold">{buttonLabel}</span>
             </Button>
           </div>

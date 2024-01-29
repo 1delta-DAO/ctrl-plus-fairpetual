@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import LeverageSlider from '@/components/ui/leverageSlider'
 import Separator from '@/components/ui/separator'
 import { Switcher, SwitcherButton } from '@/components/ui/switcher'
+import { AZERO } from '@/utils/constants'
 import { Market } from '@/utils/types'
 
 import InputBox from './input-box'
@@ -23,10 +24,12 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
 
   const [assetIn, setAssetIn] = useState<Market | undefined>(undefined)
   const [assetOut, setAssetOut] = useState<Market | undefined>(undefined)
+  const [assetInAmount, setAssetInAmount] = useState<string>('')
+  const [assetOutAmount, setAssetOutAmount] = useState<string>('')
 
   useEffect(() => {
     if (!markets?.length) return
-    setAssetIn(markets[0])
+    setAssetIn(AZERO)
     setAssetOut(markets[1] ?? markets[0])
   }, [markets])
 
@@ -44,8 +47,10 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
       <div className="flex flex-col">
         <InputBox
           topLeftLabel="Pay"
-          selectedAssetSymbol={assetIn?.symbol}
+          selectedAssetSymbol={assetIn?.symbol ?? ''}
           markets={markets}
+          amount={assetInAmount}
+          setAmount={setAssetInAmount}
           onSetAsset={setAssetIn}
         />
         <div className="z-10 m-auto mb-[-0.75em] mt-[-0.75em] flex justify-center rounded-full bg-violet-600 p-2">
@@ -53,8 +58,10 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
         </div>
         <InputBox
           topLeftLabel={LongOrShortLabel}
-          selectedAssetSymbol={assetOut?.symbol}
+          selectedAssetSymbol={assetOut?.symbol ?? ''}
           markets={markets}
+          amount={assetOutAmount}
+          setAmount={setAssetOutAmount}
           onSetAsset={setAssetOut}
         />
       </div>

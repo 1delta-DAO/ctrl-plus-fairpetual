@@ -16,7 +16,9 @@ import { Market } from '@/utils/types'
 interface InputBoxProps {
   topLeftLabel: string
   markets: Market[] | undefined
-  selectedAssetSymbol: string | undefined
+  selectedAssetSymbol: string
+  amount: string
+  setAmount: (value: string) => void
   onSetAsset: (market: Market) => void
 }
 
@@ -24,9 +26,10 @@ const InputBox: FC<InputBoxProps> = ({
   topLeftLabel,
   markets,
   selectedAssetSymbol,
+  amount,
+  setAmount,
   onSetAsset,
 }) => {
-  console.log(SymbolsToIcons[selectedAssetSymbol ?? ''])
   return (
     <div className="flex w-full flex-col gap-2 rounded-[0.35em] bg-violet-800 p-4">
       <div className="flex w-full justify-between text-sm text-gray-300">
@@ -38,6 +41,8 @@ const InputBox: FC<InputBoxProps> = ({
           className="w-full rounded-[0.35em] bg-transparent text-2xl focus:outline-none"
           placeholder="0.00"
           type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
         />
         <div className="flex min-h-[40px] w-1/2 items-center justify-end gap-2">
           <span className="text-2xl">{selectedAssetSymbol}</span>
