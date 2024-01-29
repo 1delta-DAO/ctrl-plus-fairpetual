@@ -11,9 +11,9 @@ import ChartInfo from './components/chart-info'
 import PositionManagement from './components/position-management'
 import PositionsTable from './components/positions-table'
 import TradingViewChart from './components/tradingview-chart'
-import { ContractInteractions } from './components/contractInteraction'
+import { useFetchMarkets } from './hooks/useFetchMarkets'
 
-export default function HomePage() {
+export default function Home() {
   // Display `useInkathon` error messages (optional)
   const { error } = useInkathon()
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function HomePage() {
     change24: 0.12,
   }
 
-  ContractInteractions()
+  const { markets, marketsAreLoading } = useFetchMarkets()
 
   return (
     <>
@@ -38,7 +38,7 @@ export default function HomePage() {
           <PositionsTable />
         </div>
         <div className="w-[40rem]">
-          <PositionManagement />
+          <PositionManagement markets={markets} />
         </div>
       </div>
     </>

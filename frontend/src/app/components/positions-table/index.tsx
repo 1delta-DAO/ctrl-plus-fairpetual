@@ -2,7 +2,7 @@ import Image from 'next/image'
 import { FC } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Positions, SymbolsToAssets } from '@/utils/exampleData'
+import { Positions, SymbolsToIcons } from '@/utils/constants'
 import { formatDollarAmount, formatPercentage } from '@/utils/formatters'
 import { Position } from '@/utils/types'
 
@@ -24,7 +24,7 @@ const Row = ({ position }: RowProps) => {
         <div className="flex flex-col">
           <div className="flex items-center gap-1">
             <Image
-              src={SymbolsToAssets[position.assetSymbol].icon}
+              src={SymbolsToIcons[position.assetSymbol]}
               width={17}
               height={17}
               className="rounded-full"

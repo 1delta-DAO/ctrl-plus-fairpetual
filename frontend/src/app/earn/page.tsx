@@ -8,9 +8,12 @@ import { toast } from 'react-hot-toast'
 import { Navbar } from '@/app/components/navbar'
 import { Button } from '@/components/ui/button'
 import { Switcher, SwitcherButton } from '@/components/ui/switcher'
-import { AZERO, wAZERO } from '@/utils/exampleData'
+import { AZERO } from '@/utils/constants'
+import { Market } from '@/utils/types'
 
 import InputBox from '../components/position-management/input-box'
+import { useEarnDeposit, useEarnWithdraw } from '../hooks/useEarn'
+import { useFetchMarkets } from '../hooks/useFetchMarkets'
 
 const Title: FC<{
   children: React.ReactNode
@@ -20,7 +23,7 @@ const Subtitle: FC<{
   children: React.ReactNode
 }> = ({ children }) => <h2 className="text-md text-left text-white">{children}</h2>
 
-export default function HomePage() {
+export default function Earn() {
   // Display `useInkathon` error messages (optional)
   const { error } = useInkathon()
   useEffect(() => {
@@ -28,16 +31,37 @@ export default function HomePage() {
     toast.error(error.message)
   }, [error])
 
-  const assets = [AZERO, wAZERO]
-  const [asset, setAsset] = useState(assets[0])
+  const { markets, marketsAreLoading } = useFetchMarkets()
+
+  const WAZERO = markets?.find((market) => market.symbol === 'WAZERO')
+
+  const { deposit, depositNative, depositIsLoading, depositNativeIsLoading } = useEarnDeposit({
+    marketAddress: WAZERO?.address || '',
+  })
+
+  const { withdraw, withdrawNative, withdrawIsLoading, withdrawNativeIsLoading } = useEarnWithdraw({
+    marketAddress: WAZERO?.address || '',
+  })
+
+  const [asset, setAsset] = useState<Market>(AZERO)
+  const assets = WAZERO ? [AZERO, WAZERO] : []
 
   const [isDeposit, setIsDeposit] = useState(true)
+  const [amount, setAmount] = useState<string>('')
 
   const toWrapOrUnwrap = asset === AZERO
   const inputLabel = isDeposit ? 'Send' : 'Receive'
   const buttonLabel = isDeposit
     ? `Deposit${toWrapOrUnwrap ? ' & Wrap' : ''}`
     : `Withdraw${toWrapOrUnwrap ? ' & Unwrap' : ''}`
+
+  const functionToCall = isDeposit
+    ? asset === AZERO
+      ? depositNative
+      : deposit
+    : asset === AZERO
+      ? withdrawNative
+      : withdraw
 
   return (
     <>
@@ -60,10 +84,15 @@ export default function HomePage() {
             <InputBox
               topLeftLabel={inputLabel}
               selectedAssetSymbol={asset.symbol}
-              assets={assets}
+              markets={assets}
+              amount={amount}
+              setAmount={setAmount}
               onSetAsset={setAsset}
             />
-            <Button className="rounded-[0.35em]">
+            <Button
+              className="rounded-[0.35em]"
+              onClick={() => functionToCall({ amount: Number(amount) })}
+            >
               <span className="text-[1.1em] font-bold">{buttonLabel}</span>
             </Button>
           </div>
