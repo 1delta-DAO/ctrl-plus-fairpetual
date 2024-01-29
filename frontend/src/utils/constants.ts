@@ -27,5 +27,5 @@ export const AZERO: Market = {
   address: '',
   symbol: 'AZERO',
   name: 'Aleph Zero',
-  decimals: 0,
+  decimals: 12,
 }

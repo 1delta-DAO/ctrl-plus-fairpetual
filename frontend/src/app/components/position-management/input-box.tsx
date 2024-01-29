@@ -17,8 +17,9 @@ interface InputBoxProps {
   topLeftLabel: string
   markets: Market[] | undefined
   selectedAssetSymbol: string
-  amount: string
-  setAmount: (value: string) => void
+  inputAmount: string
+  walletBalance: string
+  setInputAmount: (value: string) => void
   onSetAsset: (market: Market) => void
 }
 
@@ -26,23 +27,24 @@ const InputBox: FC<InputBoxProps> = ({
   topLeftLabel,
   markets,
   selectedAssetSymbol,
-  amount,
-  setAmount,
+  inputAmount,
+  walletBalance,
+  setInputAmount,
   onSetAsset,
 }) => {
   return (
     <div className="flex w-full flex-col gap-2 rounded-[0.35em] bg-violet-800 p-4">
       <div className="flex w-full justify-between text-sm text-gray-300">
         <span>{topLeftLabel}</span>
-        <span>Balance: 0</span>
+        <span>Wallet Balance: {walletBalance}</span>
       </div>
       <div className="flex w-full justify-between">
         <input
           className="w-full rounded-[0.35em] bg-transparent text-2xl focus:outline-none"
           placeholder="0.00"
           type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          value={inputAmount}
+          onChange={(e) => setInputAmount(e.target.value)}
         />
         <div className="flex min-h-[40px] w-1/2 items-center justify-end gap-2">
           <span className="text-2xl">{selectedAssetSymbol}</span>

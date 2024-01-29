@@ -11,7 +11,7 @@ import ChartInfo from './components/chart-info'
 import PositionManagement from './components/position-management'
 import PositionsTable from './components/positions-table'
 import TradingViewChart from './components/tradingview-chart'
-import { useFetchMarkets } from './hooks/useFetchMarkets'
+import { useFetchMarkets } from './hooks/useMarkets'
 
 export default function Home() {
   // Display `useInkathon` error messages (optional)
@@ -26,7 +26,7 @@ export default function Home() {
     change24: 0.12,
   }
 
-  const { markets, marketsAreLoading } = useFetchMarkets()
+  const { markets } = useFetchMarkets()
 
   return (
     <>

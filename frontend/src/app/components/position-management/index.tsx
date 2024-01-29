@@ -1,8 +1,9 @@
 import { FC, useEffect, useState } from 'react'
 
-import { EuiRangeProps } from '@elastic/eui'
 import { FaDownLong } from 'react-icons/fa6'
 
+import { useManagePosition } from '@/app/hooks/useManagePosition'
+import { useWalletBalance } from '@/app/hooks/useWalletBalance'
 import { Button } from '@/components/ui/button'
 import LeverageSlider from '@/components/ui/leverageSlider'
 import Separator from '@/components/ui/separator'
@@ -18,7 +19,7 @@ interface PositionManagementProps {
 
 const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
   const [long, setLong] = useState(true)
-  const [leverage, setLeverage] = useState<EuiRangeProps['value']>('2')
+  const [leverage, setLeverage] = useState<number>(2)
 
   const LongOrShortLabel = long ? 'Long' : 'Short'
 
@@ -26,12 +27,49 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
   const [assetOut, setAssetOut] = useState<Market | undefined>(undefined)
   const [assetInAmount, setAssetInAmount] = useState<string>('')
   const [assetOutAmount, setAssetOutAmount] = useState<string>('')
+  const [walletBalanceAssetIn, setWalletBalanceAssetIn] = useState<string>('')
+  const [walletBalanceAssetOut, setWalletBalanceAssetOut] = useState<string>('')
 
   useEffect(() => {
     if (!markets?.length) return
     setAssetIn(AZERO)
     setAssetOut(markets[1] ?? markets[0])
   }, [markets])
+
+  const { openPositionWithNative } = useManagePosition({ marketAddress: assetOut?.address ?? '' })
+  const { getNativeBalance, getPSP22Balance } = useWalletBalance()
+
+  const longOrShort = long ? (assetIn === AZERO ? openPositionWithNative : null) : null
+
+  const handleLongOrShort = () => {
+    if (longOrShort) {
+      longOrShort({
+        amount: parseFloat(assetInAmount),
+        leverage: leverage,
+      })
+    }
+  }
+
+  const getWalletBalanceAssetIn = assetIn === AZERO ? getNativeBalance : getPSP22Balance
+  const getWalletBalanceAssetOut = assetOut === AZERO ? getNativeBalance : getPSP22Balance
+
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      if (!getWalletBalanceAssetIn || !assetIn) return
+      const balance = await getWalletBalanceAssetIn(assetIn)
+      setWalletBalanceAssetIn(balance || '0')
+    }
+    fetchWalletBalance()
+  }, [assetIn, getWalletBalanceAssetIn])
+
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      if (!getWalletBalanceAssetOut || !assetOut) return
+      const balance = await getWalletBalanceAssetOut(assetOut)
+      setWalletBalanceAssetOut(balance || '0')
+    }
+    fetchWalletBalance()
+  }, [assetOut, getWalletBalanceAssetOut])
 
   return (
     <div className="flex w-full flex-col gap-4 rounded bg-violet-950 p-4">
@@ -49,8 +87,9 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
           topLeftLabel="Pay"
           selectedAssetSymbol={assetIn?.symbol ?? ''}
           markets={markets}
-          amount={assetInAmount}
-          setAmount={setAssetInAmount}
+          inputAmount={assetInAmount}
+          walletBalance={walletBalanceAssetIn}
+          setInputAmount={setAssetInAmount}
           onSetAsset={setAssetIn}
         />
         <div className="z-10 m-auto mb-[-0.75em] mt-[-0.75em] flex justify-center rounded-full bg-violet-600 p-2">
@@ -60,8 +99,9 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
           topLeftLabel={LongOrShortLabel}
           selectedAssetSymbol={assetOut?.symbol ?? ''}
           markets={markets}
-          amount={assetOutAmount}
-          setAmount={setAssetOutAmount}
+          inputAmount={assetOutAmount}
+          walletBalance={walletBalanceAssetOut}
+          setInputAmount={setAssetOutAmount}
           onSetAsset={setAssetOut}
         />
       </div>
@@ -94,7 +134,7 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
         </div>
       </div>
 
-      <Button className="rounded-[0.35em]">
+      <Button className="rounded-[0.35em]" onClick={handleLongOrShort}>
         <span className="text-[1.1em] font-bold">{LongOrShortLabel}</span>
       </Button>
     </div>

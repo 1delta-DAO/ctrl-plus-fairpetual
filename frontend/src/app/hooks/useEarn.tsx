@@ -11,19 +11,18 @@ interface useEarnDepositProps {
 }
 
 export const useEarnDeposit = ({ marketAddress }: useEarnDepositProps) => {
-  const { api, activeAccount, activeSigner } = useInkathon()
+  const { api, activeAccount } = useInkathon()
   const { contract: marketContract } = useContract(marketAbi, marketAddress)
 
   const [depositIsLoading, setDepositIsLoading] = useState<boolean>(false)
   const [depositNativeIsLoading, setDepositNativeIsLoading] = useState<boolean>(false)
 
   const deposit = async ({ amount }: { amount: number }) => {
-    if (!activeAccount || !marketContract || !activeSigner || !api) {
+    if (!activeAccount || !marketContract || !api) {
       toast.error('Wallet not connected. Try again…')
       return
     }
 
-    // Send transaction
     setDepositIsLoading(true)
     try {
       await contractTxWithToast(api, activeAccount.address, marketContract, 'deposit', {}, [amount])
@@ -31,17 +30,15 @@ export const useEarnDeposit = ({ marketAddress }: useEarnDepositProps) => {
       console.error(e)
     } finally {
       setDepositIsLoading(false)
-      // refetch balances
     }
   }
 
   const depositNative = async ({ amount }: { amount: number }) => {
-    if (!activeAccount || !marketContract || !activeSigner || !api) {
+    if (!activeAccount || !marketContract || !api) {
       toast.error('Wallet not connected. Try again…')
       return
     }
 
-    // Send transaction
     setDepositNativeIsLoading(true)
     try {
       await contractTxWithToast(
@@ -58,7 +55,6 @@ export const useEarnDeposit = ({ marketAddress }: useEarnDepositProps) => {
       console.error(e)
     } finally {
       setDepositNativeIsLoading(false)
-      // refetch balances
     }
   }
 
@@ -71,52 +67,45 @@ export const useEarnDeposit = ({ marketAddress }: useEarnDepositProps) => {
 }
 
 export const useEarnWithdraw = ({ marketAddress }: useEarnDepositProps) => {
-  const { api, activeAccount, activeSigner } = useInkathon()
+  const { api, activeAccount } = useInkathon()
   const { contract: marketContract } = useContract(marketAbi, marketAddress)
 
   const [withdrawIsLoading, setWithdrawIsLoading] = useState<boolean>(false)
   const [withdrawNativeIsLoading, setWithdrawNativeIsLoading] = useState<boolean>(false)
 
   const withdraw = async ({ amount }: { amount: number }) => {
-    if (!activeAccount || !marketContract || !activeSigner || !api) {
+    if (!activeAccount || !marketContract || !api) {
       toast.error('Wallet not connected. Try again…')
       return
     }
 
-    // Send transaction
     setWithdrawIsLoading(true)
     try {
-      await contractTxWithToast(api, activeAccount.address, marketContract, 'withdraw', {}, [])
+      await contractTxWithToast(api, activeAccount.address, marketContract, 'withdraw', {}, [
+        amount,
+      ])
     } catch (e) {
       console.error(e)
     } finally {
       setWithdrawIsLoading(false)
-      // refetch balances
     }
   }
 
   const withdrawNative = async ({ amount }: { amount: number }) => {
-    if (!activeAccount || !marketContract || !activeSigner || !api) {
+    if (!activeAccount || !marketContract || !api) {
       toast.error('Wallet not connected. Try again…')
       return
     }
 
-    // Send transaction
     setWithdrawNativeIsLoading(true)
     try {
-      await contractTxWithToast(
-        api,
-        activeAccount.address,
-        marketContract,
-        'withdraw_native',
-        {},
-        [],
-      )
+      await contractTxWithToast(api, activeAccount.address, marketContract, 'withdraw_native', {}, [
+        amount,
+      ])
     } catch (e) {
       console.error(e)
     } finally {
       setWithdrawNativeIsLoading(false)
-      // refetch balances
     }
   }
 
