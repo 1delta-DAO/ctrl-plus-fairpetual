@@ -86,7 +86,9 @@ export const useEarnWithdraw = ({ marketAddress }: useEarnDepositProps) => {
     // Send transaction
     setWithdrawIsLoading(true)
     try {
-      await contractTxWithToast(api, activeAccount.address, marketContract, 'withdraw', {}, [])
+      await contractTxWithToast(api, activeAccount.address, marketContract, 'withdraw', {}, [
+        amount,
+      ])
     } catch (e) {
       console.error(e)
     } finally {
@@ -104,14 +106,9 @@ export const useEarnWithdraw = ({ marketAddress }: useEarnDepositProps) => {
     // Send transaction
     setWithdrawNativeIsLoading(true)
     try {
-      await contractTxWithToast(
-        api,
-        activeAccount.address,
-        marketContract,
-        'withdraw_native',
-        {},
-        [],
-      )
+      await contractTxWithToast(api, activeAccount.address, marketContract, 'withdraw_native', {}, [
+        amount,
+      ])
     } catch (e) {
       console.error(e)
     } finally {

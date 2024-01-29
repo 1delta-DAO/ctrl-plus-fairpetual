@@ -63,6 +63,8 @@ export default function Earn() {
       ? withdrawNative
       : withdraw
 
+  const formattedAmount = Number(amount) * 10 ** asset.decimals
+
   return (
     <>
       <Navbar />
@@ -91,7 +93,8 @@ export default function Earn() {
             />
             <Button
               className="rounded-[0.35em]"
-              onClick={() => functionToCall({ amount: Number(amount) })}
+              onClick={() => functionToCall({ amount: formattedAmount })}
+              disabled={amount === '' || !formattedAmount}
             >
               <span className="text-[1.1em] font-bold">{buttonLabel}</span>
             </Button>

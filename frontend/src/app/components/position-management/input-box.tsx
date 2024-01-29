@@ -1,6 +1,7 @@
 import Image from 'next/image'
-import { FC } from 'react'
+import { FC, useState } from 'react'
 
+import { useInkathon } from '@scio-labs/use-inkathon'
 import { FaChevronDown } from 'react-icons/fa6'
 
 import { Button } from '@/components/ui/button'
@@ -30,6 +31,31 @@ const InputBox: FC<InputBoxProps> = ({
   setAmount,
   onSetAsset,
 }) => {
+  const { api, activeAccount, activeSigner } = useInkathon()
+  const market = markets?.find((market) => market.symbol === selectedAssetSymbol)
+
+  const [balance, setBalance] = useState(0)
+  const { activeChain } = useInkathon()
+
+  // useEffect(() => {
+  //   const fetchBalance = async () => {
+  //     if (api && activeAccount && market) {
+  //       let balance: BalanceData | undefined = undefined
+  //       if (market.symbol === 'AZERO') {
+  //         balance = await getBalance(api, activeAccount.address)
+  //       } else {
+  //         const psp22balances = await getPSP22Balances(
+  //           api,
+  //           activeAccount.address,
+  //           activeChain?.network || '',
+  //         )
+  //         console.log(psp22balances)
+  //       }
+  //     }
+  //   }
+  //   fetchBalance()
+  // }, [market])
+
   return (
     <div className="flex w-full flex-col gap-2 rounded-[0.35em] bg-violet-800 p-4">
       <div className="flex w-full justify-between text-sm text-gray-300">

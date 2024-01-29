@@ -14,11 +14,14 @@ import toast from 'react-hot-toast'
 import { Market } from '@/utils/types'
 
 export const useFetchMarkets = () => {
-  const { api } = useInkathon()
+  const { api, activeAccount } = useInkathon()
   const { contract: managerContract } = useRegisteredContract(ContractIds.Manager)
   const { contract: marketContract } = useRegisteredContract(ContractIds.Market)
   const [marketsAreLoading, setMarketsAreLoading] = useState<boolean>(false)
+  const [depositBalancesAreLoading, setDepositBalancesAreLoading] = useState<boolean>(false)
+  const [marketAddresses, setMarketAddresses] = useState<string[]>()
   const [markets, setMarkets] = useState<Market[]>()
+  const [depositBalances, setDepositBalances] = useState<{ [key: string]: number }>()
 
   const fetchMarkets = async () => {
     if (!managerContract || !marketContract || !api) return
@@ -34,6 +37,8 @@ export const useFetchMarkets = () => {
       } = decodeOutput(result, managerContract, 'view_markets')
       if (isError) throw new Error(decodedOutput)
 
+      setMarketAddresses(marketsAddresses)
+
       const markets: Market[] = []
 
       for (const address of marketsAddresses) {
@@ -44,6 +49,7 @@ export const useFetchMarkets = () => {
           decodedOutput,
         } = decodeOutput(result, marketContract, 'view_market_data')
         if (isError) throw new Error(decodedOutput)
+
         const market: Market = {
           address,
           name: marketData[0],
@@ -62,11 +68,45 @@ export const useFetchMarkets = () => {
     }
   }
 
+  const fetchDepositBalances = async () => {
+    if (!marketContract || !api) return
+    if (!marketAddresses) return
+
+    const balances: { [key: string]: number } = {}
+
+    for (const address of marketAddresses) {
+      const market = markets?.find((market) => market.address === address)
+      const resultTwo = await contractQuery(api, address, marketContract, 'psp22::balance_of', {}, [
+        activeAccount?.address ?? '',
+      ])
+      const {
+        output: test,
+        isError: isErrorTwo,
+        decodedOutput: decodedOutputTwo,
+      } = decodeOutput(resultTwo, marketContract, 'psp22::balance_of')
+
+      const balance = parseInt(test.replace(/,/g, '')) / 10 ** (market?.decimals || 0)
+
+      balances[address] = balance
+    }
+
+    setDepositBalances(balances)
+  }
+
   useEffect(() => {
     fetchMarkets()
   }, [managerContract])
 
-  return { markets, marketsAreLoading }
+  useEffect(() => {
+    fetchDepositBalances()
+  }, [marketAddresses])
+
+  return {
+    markets,
+    marketsAreLoading,
+    depositBalances,
+    depositBalancesAreLoading,
+  }
 }
 
 // const [updateIsLoading, setUpdateIsLoading] = useState<boolean>()
