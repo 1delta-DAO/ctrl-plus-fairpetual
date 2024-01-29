@@ -259,15 +259,15 @@ pub mod market {
             let contract = self.env().account_id();
             let underlying_asset: contract_ref!(PSP22) = self.underlying_asset.into();
 
-            self.data
-                .burn(caller, deposit_token_amount)
-                .map_err(|_| MarketError::BurnFailed)?;
-
             let token_amount = deposit_token_amount
                 .checked_mul(underlying_asset.balance_of(contract))
                 .ok_or(MarketError::Overflow)?
                 .checked_div(self.total_supply())
                 .ok_or(MarketError::Overflow)?;
+
+            self.data
+                .burn(caller, deposit_token_amount)
+                .map_err(|_| MarketError::BurnFailed)?;
 
             Ok(token_amount)
         }
