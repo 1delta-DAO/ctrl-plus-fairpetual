@@ -1,4 +1,6 @@
 use ink::prelude::string::String;
+use psp22::PSP22Error;
+use vault::VaultError;
 
 #[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
@@ -10,10 +12,10 @@ pub enum MarketError {
     MintFailed,
     NotLiquidatable,
     NotSupported,
-    OracleFailed,
     Overflow,
     PositionNotFound,
-    PSP22MetaDataFailed,
     TransferFailed,
-    VaultError,
+    OracleFailed,
+    VaultError(VaultError),
+    PSP22Error(PSP22Error)
 }

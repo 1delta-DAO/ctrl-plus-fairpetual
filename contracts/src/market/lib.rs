@@ -322,7 +322,7 @@ pub mod market {
             let mut vault: contract_ref!(CollateralVault) = self.vault.into();
             vault
                 .deposit(caller, id, collateral_asset, collateral_amount)
-                .map_err(|_| MarketError::VaultError)?;
+                .map_err(|err| MarketError::VaultError(err))?;
 
             self.new_id.insert(caller, &id.saturating_add(1));
 
@@ -469,7 +469,7 @@ pub mod market {
             if pnl_percent > 0 {
                 vault
                     .withdraw(caller, id, position.collateral_amount, caller)
-                    .map_err(|_| MarketError::VaultError)?;
+                    .map_err(|err| MarketError::VaultError(err))?;
 
                 let pnl_usd = pnl_percent
                     .checked_mul(position.collateral_usd as i128)
@@ -507,11 +507,11 @@ pub mod market {
 
                 vault
                     .withdraw(caller, id, rest_collateral_amount, caller)
-                    .map_err(|_| MarketError::VaultError)?;
+                    .map_err(|err| MarketError::VaultError(err))?;
             } else {
                 vault
                     .withdraw(caller, id, position.collateral_amount, caller)
-                    .map_err(|_| MarketError::VaultError)?;
+                    .map_err(|err| MarketError::VaultError(err))?;
             }
 
             let index_to_remove = ids_for_user.iter().position(|&x| x == id).unwrap();
@@ -585,7 +585,7 @@ pub mod market {
             let mut vault: contract_ref!(CollateralVault) = self.vault.into();
             vault
                 .withdraw(user, id, owner_collateral as u128, user)
-                .map_err(|_| MarketError::VaultError)?;
+                .map_err(|err| MarketError::VaultError(err))?;
 
             let deployer_collateral = seize_amount
                 .checked_mul(self.protocol_fee as i128)
@@ -595,7 +595,7 @@ pub mod market {
 
             vault
                 .withdraw(user, id, deployer_collateral as u128, self.owner)
-                .map_err(|_| MarketError::VaultError)?;
+                .map_err(|err| MarketError::VaultError(err))?;
 
             let caller_collateral = seize_amount
                 .checked_mul(
@@ -609,7 +609,7 @@ pub mod market {
 
             vault
                 .withdraw(user, id, caller_collateral as u128, caller)
-                .map_err(|_| MarketError::VaultError)?;
+                .map_err(|err| MarketError::VaultError(err))?;
 
             Ok(())
         }
