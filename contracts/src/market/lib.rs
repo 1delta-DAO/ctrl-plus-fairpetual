@@ -9,7 +9,7 @@ pub use position::Position;
 pub use self::market::MarketRef;
 
 #[ink::contract]
-mod market {
+pub mod market {
     use crate::{MarketError, Position};
     use dia_oracle_getter::OracleGetters;
     use ink::{
@@ -19,8 +19,7 @@ mod market {
             DefaultEnvironment,
         },
         prelude::{format, string::String, vec::Vec},
-        storage::Mapping,
-        LangError,
+        storage::Mapping
     };
     use psp22::{PSP22Data, PSP22Error, PSP22Metadata, PSP22};
     use vault::CollateralVault;
@@ -128,7 +127,8 @@ mod market {
         }
 
         fn get_price(&self, symbol: String) -> Result<u128, MarketError> {
-            let pair_symbol = format!("{symbol}/USD");
+            let unwrapped_symbol = &symbol[1..];
+            let pair_symbol = format!("{unwrapped_symbol}/USD");
 
             let oracle_getter: contract_ref!(OracleGetters) = self.oracle.into();
             // DIA price oracle returns USD price with 18 decimals by default
@@ -204,17 +204,16 @@ mod market {
         }
 
         fn wrap_native(&self, transferred_amount: u128) -> Result<(), MarketError> {
-            let call_result: Result<Result<(), PSP22Error>, LangError> =
+            let call_result: Result<(), PSP22Error> =
                 build_call::<DefaultEnvironment>()
-                    .call(self.underlying_asset)
+                    .call(self.wazero)
                     .exec_input(ExecutionInput::new(Selector::new(WAZERO_DEPOSIT_SELECTOR)))
                     .transferred_value(transferred_amount)
-                    .returns::<Result<Result<(), PSP22Error>, LangError>>()
+                    .returns::<Result<(), PSP22Error>>()
                     .invoke();
 
             call_result
-                .map_err(|_| MarketError::LangError)?
-                .map_err(|_| MarketError::TransferFailed)
+                .map_err(|_| MarketError::LangError)
         }
 
         fn calculate_amount_and_mint(
@@ -223,11 +222,12 @@ mod market {
             amount: u128,
         ) -> Result<(), MarketError> {
             let contract = self.env().account_id();
+            let underlying_asset: contract_ref!(PSP22) = self.underlying_asset.into();
 
             let deposit_token_amount = amount
                 .checked_mul(self.total_supply())
                 .ok_or(MarketError::Overflow)?
-                .checked_div(self.balance_of(contract))
+                .checked_div(underlying_asset.balance_of(contract))
                 .ok_or(MarketError::Overflow)?;
 
             self.data
@@ -243,13 +243,14 @@ mod market {
             deposit_token_amount: u128,
         ) -> Result<u128, MarketError> {
             let contract = self.env().account_id();
+            let underlying_asset: contract_ref!(PSP22) = self.underlying_asset.into();
 
             self.data
                 .burn(caller, deposit_token_amount)
                 .map_err(|_| MarketError::BurnFailed)?;
 
             let token_amount = deposit_token_amount
-                .checked_mul(self.balance_of(contract))
+                .checked_mul(underlying_asset.balance_of(contract))
                 .ok_or(MarketError::Overflow)?
                 .checked_div(self.total_supply())
                 .ok_or(MarketError::Overflow)?;
@@ -381,7 +382,7 @@ mod market {
             Ok(())
         }
 
-        #[ink(message)]
+        #[ink(message, payable)]
         pub fn open_native(&mut self, is_long: bool, leverage: u8) -> Result<(), MarketError> {
             let caller = self.env().caller();
 
