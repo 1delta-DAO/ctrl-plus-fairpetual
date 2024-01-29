@@ -66,7 +66,14 @@ const deploy_faker = async () => {
   const { api, chain, account } = initParams
 
   const { abi, wasm } = await getDeploymentData('faker')
-  const faker = await deployContract(api, account, abi, wasm, 'new', [])
+
+  const pair = "AZERO/USD"
+  const price = 100000000000000
+
+  const faker = await deployContract(api, account, abi, wasm, 'new', [
+    pair, 
+    price
+  ])
 
   await writeContractAddresses(chain.network, {
     faker,

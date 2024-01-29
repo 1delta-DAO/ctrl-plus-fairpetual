@@ -16,9 +16,18 @@ mod faker {
 
     impl Faker {
         #[ink(constructor)]
-        pub fn new() -> Self {
-            Self {
-                oracle: Default::default()
+        pub fn default() -> Self {
+            Self { 
+                oracle: Default::default(),
+            }
+        }
+
+        #[ink(constructor)]
+        pub fn new(pair: String, price: u128) -> Self {
+            let mut oracle = Mapping::new();
+            oracle.insert(pair, &(0, price));
+            Self { 
+                oracle: oracle,
             }
         }
 
