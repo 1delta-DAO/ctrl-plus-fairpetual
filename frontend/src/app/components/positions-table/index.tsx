@@ -4,7 +4,7 @@ import { FC } from 'react'
 import { Button } from '@/components/ui/button'
 import { Positions, SymbolsToIcons } from '@/utils/constants'
 import { formatDollarAmount, formatPercentage } from '@/utils/formatters'
-import { Position } from '@/utils/types'
+import { Market, MarketPosition, Position } from '@/utils/types'
 
 interface RowProps {
   position: Position
@@ -77,7 +77,12 @@ const Row = ({ position }: RowProps) => {
   )
 }
 
-const PositionsTable: FC = () => {
+interface PositionsTableProps {
+  markets: Market[] | undefined
+  positions: { [key: string]: MarketPosition[] }
+}
+
+const PositionsTable: FC<PositionsTableProps> = ({ markets, positions }) => {
   return (
     <>
       <div className="flex w-full items-center gap-14 rounded-[0.35em] bg-violet-800 p-3">

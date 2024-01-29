@@ -13,7 +13,7 @@ import { Market } from '@/utils/types'
 
 import InputBox from '../components/position-management/input-box'
 import { useEarnDeposit, useEarnWithdraw } from '../hooks/useEarn'
-import { useFetchMarkets } from '../hooks/useMarkets'
+import { useMarkets } from '../hooks/useMarkets'
 import { useWalletBalance } from '../hooks/useWalletBalance'
 
 const Title: FC<{
@@ -32,7 +32,7 @@ export default function Earn() {
     toast.error(error.message)
   }, [error])
 
-  const { markets, depositBalances, fetchDepositBalances } = useFetchMarkets()
+  const { markets, depositBalances, fetchDepositBalances } = useMarkets()
   const { getNativeBalance, getPSP22Balance } = useWalletBalance()
 
   const WAZERO = markets?.find((market) => market.symbol === 'WAZERO')

@@ -21,3 +21,15 @@ export interface Position {
   collateral: number
   entryPrice: number
 }
+
+export interface MarketPosition {
+  user: string
+  id: number
+  collateralAmount: number
+  collateralAsset: string
+  collateralUsd: number
+  entryPrice: number
+  leverage: number
+  isLong: boolean
+  blockOpen: number
+}

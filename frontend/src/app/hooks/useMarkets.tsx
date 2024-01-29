@@ -15,12 +15,11 @@ import toast from 'react-hot-toast'
 
 import { Market } from '@/utils/types'
 
-export const useFetchMarkets = () => {
+export const useMarkets = () => {
   const { api, activeAccount } = useInkathon()
   const { contract: managerContract } = useRegisteredContract(ContractIds.Manager)
   const [marketsAreLoading, setMarketsAreLoading] = useState<boolean>(false)
   const [depositBalancesAreLoading, setDepositBalancesAreLoading] = useState<boolean>(false)
-  const [marketAddresses, setMarketAddresses] = useState<string[]>()
   const [markets, setMarkets] = useState<Market[]>()
   const [depositBalances, setDepositBalances] = useState<{ [key: string]: number }>()
 
@@ -37,10 +36,6 @@ export const useFetchMarkets = () => {
         decodedOutput,
       } = decodeOutput(result, managerContract, 'view_markets')
       if (isError) throw new Error(decodedOutput)
-
-      setMarketAddresses(marketsAddresses)
-
-      console.log(marketsAddresses)
 
       const markets: Market[] = []
       for (const address of marketsAddresses) {
@@ -72,11 +67,12 @@ export const useFetchMarkets = () => {
   }
 
   const fetchDepositBalances = async () => {
-    if (!marketAddresses || !api) return
+    if (!markets || !api) return
 
     const balances: { [key: string]: number } = {}
 
-    for (const address of marketAddresses) {
+    for (const market of markets) {
+      const address = market?.address ?? ''
       const marketContract = new ContractPromise(api, marketAbi, address)
       const result = await contractQuery(api, address, marketContract, 'psp22::balance_of', {}, [
         activeAccount?.address ?? '',
@@ -88,7 +84,6 @@ export const useFetchMarkets = () => {
       } = decodeOutput(result, marketContract, 'psp22::balance_of')
       if (isError) throw new Error(decodedOutput)
 
-      const market = markets?.find((market) => market.address === address)
       const balance = parseInt(balanceToFormat.replace(/,/g, '')) / 10 ** (market?.decimals || 0)
 
       balances[address] = balance
@@ -103,7 +98,7 @@ export const useFetchMarkets = () => {
 
   useEffect(() => {
     fetchDepositBalances()
-  }, [marketAddresses])
+  }, [markets])
 
   return {
     markets,
