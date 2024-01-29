@@ -10,20 +10,21 @@ ink = { version = "4.3.0", default-features = false }
 
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
 scale-info = { version = "2.9", default-features = false, features = ["derive"], optional = true }
-psp22 = { version = "0.2", default-features = false, features = ["ink-as-dependency"] }
+psp22 = { path = "../psp22", default-features = false, features = ["ink-as-dependency"] }
 vault = { path = "../vault", default-features = false, features = ["ink-as-dependency"] }
 dia-oracle-getter = { path = "../oracle/oracle-getter", default-features = false }
-wrapped-azero = { path = "../wrapped_azero", default-features = false, features = ["ink-as-dependency"] }
+wrapped_azero = { path = "../wrapped_azero", default-features = false, features = ["ink-as-dependency"] }
 
 [dev-dependencies]
 ink_e2e = { version = "4.3" }
+faker = { path = "../faker", default-features = false, features = ["ink-as-dependency"] }
 
 [lib]
 path = "lib.rs"
 
 [features]
 default = ["std"]
-std = ["ink/std", "scale/std", "scale-info/std", "psp22/std", "vault/std", "wrapped-azero/std"]
+std = ["ink/std", "scale/std", "scale-info/std", "psp22/std", "vault/std", "wrapped_azero/std"]
 ink-as-dependency = []
 e2e-tests = []
 

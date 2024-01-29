@@ -1,5 +1,5 @@
 [package]
-name = "wrapped-azero"
+name = "wrapped_azero"
 version = "0.1.0"
 edition = "2021"
 authors = ["Cardinal"]

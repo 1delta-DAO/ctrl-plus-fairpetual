@@ -12,7 +12,7 @@ scale = { package = "parity-scale-codec", version = "3", default-features = fals
 scale-info = { version = "2.9", default-features = false, features = ["derive"], optional = true }
 psp22 = { version = "0.2", default-features = false, features = ["ink-as-dependency"] }
 vault = { path = "../vault", default-features = false, features = ["ink-as-dependency"] }
-wrapped-azero = { path = "../wrapped_azero", default-features = false, features = ["ink-as-dependency"] }
+wrapped_azero = { path = "../wrapped_azero", default-features = false, features = ["ink-as-dependency"] }
 market = { path = "../market", default-features = false, features = ["ink-as-dependency"] }
 
 [dev-dependencies]
@@ -23,6 +23,6 @@ path = "lib.rs"
 
 [features]
 default = ["std"]
-std = ["ink/std", "scale/std", "scale-info/std", "psp22/std", "vault/std", "wrapped-azero/std", "market/std"]
+std = ["ink/std", "scale/std", "scale-info/std", "psp22/std", "vault/std", "wrapped_azero/std", "market/std"]
 ink-as-dependency = []
 e2e-tests = []
