@@ -12,6 +12,7 @@ import {
 import toast from 'react-hot-toast'
 
 import { Market } from '@/utils/types'
+import { ContractPromise } from '@polkadot/api-contract'
 
 export const useFetchMarkets = () => {
   const { api, activeAccount } = useInkathon()
@@ -40,9 +41,9 @@ export const useFetchMarkets = () => {
       setMarketAddresses(marketsAddresses)
 
       const markets: Market[] = []
-
       for (const address of marketsAddresses) {
-        const result = await contractQuery(api, address, marketContract, 'view_market_data')
+        const contract = new ContractPromise(api, marketContract.abi, address)
+        const result = await contractQuery(api, address, contract, 'view_market_data')
         const {
           output: marketData,
           isError,
@@ -76,7 +77,8 @@ export const useFetchMarkets = () => {
 
     for (const address of marketAddresses) {
       const market = markets?.find((market) => market.address === address)
-      const result = await contractQuery(api, address, marketContract, 'psp22::balance_of', {}, [
+      const contract = new ContractPromise(api, marketContract.abi, address)
+      const result = await contractQuery(api, address, contract, 'psp22::balance_of', {}, [
         activeAccount?.address ?? '',
       ])
       const {
