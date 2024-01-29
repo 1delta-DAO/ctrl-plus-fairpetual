@@ -7,7 +7,6 @@ import { env } from '@/config/environment'
  * DOCS: https://github.com/scio-labs/inkathon#2-custom-contracts
  */
 export enum ContractIds {
-  Greeter = 'greeter',
   Market = 'market',
   Manager = 'manager',
 }

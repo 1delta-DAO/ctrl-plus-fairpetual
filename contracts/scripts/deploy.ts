@@ -13,17 +13,6 @@ dotenv.config({
   path: `.env.${chainId}`,
 })
 
-/**
- * Script that deploys the greeter contract and writes its address to a file.
- *
- * Parameters:
- *  - `DIR`: Directory to read contract build artifacts & write addresses to (optional, defaults to `./deployments`)
- *  - `CHAIN`: Chain ID (optional, defaults to `development`)
- *
- * Example usage:
- *  - `pnpm run deploy`
- *  - `CHAIN=alephzero-testnet pnpm run deploy`
- */
 const deploy_psp22 = async () => {
   const initParams = await initPolkadotJs()
   const { api, chain, account } = initParams
