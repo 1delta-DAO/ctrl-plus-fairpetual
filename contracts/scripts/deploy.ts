@@ -1,7 +1,8 @@
 import { getDeploymentData } from '@/utils/getDeploymentData'
 import { initPolkadotJs } from '@/utils/initPolkadotJs'
 import { writeContractAddresses } from '@/utils/writeContractAddresses'
-import { deployContract } from '@scio-labs/use-inkathon/helpers'
+import { ContractPromise } from '@polkadot/api-contract'
+import { contractTx, deployContract } from '@scio-labs/use-inkathon/helpers'
 import * as dotenv from 'dotenv'
 
 const PRICE_ORACLE_ADDRESS_MAINNET = '5F7wPCMXX65RmL8oiuAFNKu2ydhvgcissDZ3NWZ5X85n2WPG'
@@ -93,49 +94,66 @@ const deploy_vault = async () => {
     vault,
   })
 
-  return vault.address
+  return vault.hash
 }
 
-/*
-  params:
-    name: Option<String>,
-    symbol: Option<String>,
-    decimals: u8,
-    underlying_asset: AccountId,
-    oracle: AccountId,
-    vault: AccountId,
-    wazero: AccountId,
-    liquidation_threshold: i8,
-    liquidation_penalty: u8,
-    protocol_fee: u8,
-*/
-const deploy_market = async (underlying_asset, oracle, vault, wazero) => {
+const deploy_market = async () => {
   const initParams = await initPolkadotJs()
   const { api, chain, account } = initParams
 
   const { abi, wasm } = await getDeploymentData('market')
-  const market = await deployContract(api, account, abi, wasm, 'new', [
-    "Wrapped AZERO",
-    "WAZERO",
-    12,
-    underlying_asset,
-    oracle,
-    vault,
-    wazero,
-    -80,
-    10,
-    5,
-  ])
+  const market = await deployContract(api, account, abi, wasm, 'default', [])
 
   await writeContractAddresses(chain.network, {
     market,
   })
 
-  return market.address
+  return market.hash
 }
 
-const deploy_manager = async (wazeroAddress, vaultAddress, marketAddresses) => {
-  let oracleAddress = ''
+const deploy_market_with_manager = async (
+    managerAddress,
+    marketHash,
+    name,
+    symbol,
+    underlyingAsset,
+    liquidationThreshold,
+    liquidationPenalty,
+    protocolFee,
+  ) => {
+  const initParams = await initPolkadotJs()
+  const { api, chain, account } = initParams
+
+  const { abi, wasm } = await getDeploymentData('manager')
+  const contract = new ContractPromise(api, abi, managerAddress)
+  const params = [
+    marketHash,
+    name,
+    symbol,
+    underlyingAsset,
+    liquidationThreshold,
+    liquidationPenalty,
+    protocolFee
+  ]
+
+  await contractTx(api, account, contract, 'deploy_market', {}, params)
+}
+
+const add_asset_to_vault = async (managerAddress, asset) => {
+  const initParams = await initPolkadotJs()
+  const { api, chain, account } = initParams
+
+  const { abi, wasm } = await getDeploymentData('manager')
+  const contract = new ContractPromise(api, abi, managerAddress)
+  const params = [
+    asset,
+  ]
+
+  await contractTx(api, account, contract, 'add_collateral_asset', {}, params)
+}
+
+const deploy_manager = async (version, vaultHash, wazeroAddress, oracleAddressParam) => {
+  let oracleAddress = oracleAddressParam
   if (chainId == 'alephzero') {
     oracleAddress = PRICE_ORACLE_ADDRESS_MAINNET
   } else if (chainId == 'alephzero-testnet') {
@@ -146,28 +164,39 @@ const deploy_manager = async (wazeroAddress, vaultAddress, marketAddresses) => {
   const { api, chain, account } = initParams
 
   const { abi, wasm } = await getDeploymentData('manager')
-  const version = 1
   const manager = await deployContract(api, account, abi, wasm, 'new', [
     version, 
+    vaultHash, 
     oracleAddress, 
-    wazeroAddress, 
-    vaultAddress,
-    marketAddresses,
+    wazeroAddress,
   ])
 
   await writeContractAddresses(chain.network, {
     manager,
   })
+
+  return manager.address
 }
 
 const main = async () => {
   try {
     const wazeroAddress = await deploy_wazero()
     const fakerAddress = await deploy_faker()
-    const vaultAddress = await deploy_vault()
-    const markets = []
-    markets.push(await deploy_market(wazeroAddress, fakerAddress, vaultAddress, wazeroAddress))
-    await deploy_manager(wazeroAddress, vaultAddress, markets)
+    const vaultHash = await deploy_vault()
+    const marketHash = await deploy_market()
+    const managerAddress = await deploy_manager(1, vaultHash, wazeroAddress, fakerAddress)
+
+    await add_asset_to_vault(managerAddress, wazeroAddress)
+    await deploy_market_with_manager(
+      managerAddress,
+      marketHash,
+      "Wrapped Azero",
+      "WAZERO",
+      wazeroAddress,
+      -10,
+      10,
+      5,
+    )
 
     console.log('\nDeployments completed successfully')
   } catch (error) {
