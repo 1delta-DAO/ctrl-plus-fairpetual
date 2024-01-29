@@ -3,13 +3,13 @@ import { FC } from 'react'
 import { EuiRange, EuiRangeProps, useGeneratedHtmlId } from '@elastic/eui'
 
 interface LeverageSliderProps {
-  leverage: EuiRangeProps['value']
-  setLeverage: (value: EuiRangeProps['value']) => void
+  leverage: number
+  setLeverage: (value: number) => void
 }
 
 const LeverageSlider: FC<LeverageSliderProps> = ({ leverage, setLeverage }) => {
   const onChange: EuiRangeProps['onChange'] = (e) => {
-    setLeverage(e.currentTarget.value)
+    setLeverage(parseInt(e.currentTarget.value))
   }
 
   const rangeNoLinearId = useGeneratedHtmlId({ prefix: 'rangeNoLinear' })
@@ -27,18 +27,11 @@ const LeverageSlider: FC<LeverageSliderProps> = ({ leverage, setLeverage }) => {
     },
   ]
 
-  const ticks = [
-    { label: '1x', value: 1 },
-    { label: '2x', value: 2 },
-    { label: '3x', value: 3 },
-    { label: '4x', value: 4 },
-    { label: '5x', value: 5 },
-    { label: '6x', value: 6 },
-    { label: '7x', value: 7 },
-    { label: '8x', value: 8 },
-    { label: '9x', value: 9 },
-    { label: '10x', value: 10 },
-  ]
+  // e.g., [{ label: '1x', value: 1 }, { label: '2x', value: 2 }, ...]
+  const ticks = Array.from({ length: 10 }, (_, i) => ({
+    label: `${i + 1}x`,
+    value: i + 1,
+  }))
 
   return (
     <>

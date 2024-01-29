@@ -76,16 +76,17 @@ export const useFetchMarkets = () => {
 
     for (const address of marketAddresses) {
       const market = markets?.find((market) => market.address === address)
-      const resultTwo = await contractQuery(api, address, marketContract, 'psp22::balance_of', {}, [
+      const result = await contractQuery(api, address, marketContract, 'psp22::balance_of', {}, [
         activeAccount?.address ?? '',
       ])
       const {
-        output: test,
-        isError: isErrorTwo,
-        decodedOutput: decodedOutputTwo,
-      } = decodeOutput(resultTwo, marketContract, 'psp22::balance_of')
+        output: balanceToFormat,
+        isError: isError,
+        decodedOutput: decodedOutput,
+      } = decodeOutput(result, marketContract, 'psp22::balance_of')
+      if (isError) throw new Error(decodedOutput)
 
-      const balance = parseInt(test.replace(/,/g, '')) / 10 ** (market?.decimals || 0)
+      const balance = parseInt(balanceToFormat.replace(/,/g, '')) / 10 ** (market?.decimals || 0)
 
       balances[address] = balance
     }
@@ -109,27 +110,3 @@ export const useFetchMarkets = () => {
     fetchDepositBalances,
   }
 }
-
-// const [updateIsLoading, setUpdateIsLoading] = useState<boolean>()
-
-//   // Update Greeting /*
-//   const updateGreeting = async ({ newMessage }: UpdateGreetingValues) => {
-//     if (!activeAccount || !contract || !activeSigner || !api) {
-//       toast.error('Wallet not connected. Try again…')
-//       return
-//     }
-
-//     // Send transaction
-//     setUpdateIsLoading(true)
-//     try {
-//       await contractTxWithToast(api, activeAccount.address, contract, 'setMessage', {}, [
-//         newMessage,
-//       ])
-//       reset()
-//     } catch (e) {
-//       console.error(e)
-//     } finally {
-//       setUpdateIsLoading(false)
-//       fetchGreeting()
-//     }
-//   }*/

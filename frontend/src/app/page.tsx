@@ -26,7 +26,7 @@ export default function Home() {
     change24: 0.12,
   }
 
-  const { markets, marketsAreLoading } = useFetchMarkets()
+  const { markets } = useFetchMarkets()
 
   return (
     <>
