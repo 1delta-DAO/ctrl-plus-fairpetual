@@ -233,11 +233,16 @@ pub mod market {
             let contract = self.env().account_id();
             let underlying_asset: contract_ref!(PSP22) = self.underlying_asset.into();
 
-            let deposit_token_amount = amount
-                .checked_mul(self.total_supply())
-                .ok_or(MarketError::Overflow)?
-                .checked_div(underlying_asset.balance_of(contract))
-                .ok_or(MarketError::Overflow)?;
+            let deposit_token_amount: u128;
+            if self.total_supply() == 0 {
+                deposit_token_amount = amount;
+            } else {
+                deposit_token_amount = amount
+                    .checked_mul(self.total_supply())
+                    .ok_or(MarketError::Overflow)?
+                    .checked_div(underlying_asset.balance_of(contract))
+                    .ok_or(MarketError::Overflow)?;
+            }
 
             self.data
                 .mint(caller, deposit_token_amount)
