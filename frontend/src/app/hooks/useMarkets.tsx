@@ -106,6 +106,7 @@ export const useFetchMarkets = () => {
     marketsAreLoading,
     depositBalances,
     depositBalancesAreLoading,
+    fetchDepositBalances,
   }
 }
 

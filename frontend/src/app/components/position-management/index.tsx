@@ -50,7 +50,7 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
           selectedAssetSymbol={assetIn?.symbol ?? ''}
           markets={markets}
           amount={assetInAmount}
-          setAmount={setAssetInAmount}
+          setInputAmount={setAssetInAmount}
           onSetAsset={setAssetIn}
         />
         <div className="z-10 m-auto mb-[-0.75em] mt-[-0.75em] flex justify-center rounded-full bg-violet-600 p-2">
@@ -61,7 +61,7 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
           selectedAssetSymbol={assetOut?.symbol ?? ''}
           markets={markets}
           amount={assetOutAmount}
-          setAmount={setAssetOutAmount}
+          setInputAmount={setAssetOutAmount}
           onSetAsset={setAssetOut}
         />
       </div>

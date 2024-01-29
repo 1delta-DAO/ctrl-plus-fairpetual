@@ -13,7 +13,8 @@ import { Market } from '@/utils/types'
 
 import InputBox from '../components/position-management/input-box'
 import { useEarnDeposit, useEarnWithdraw } from '../hooks/useEarn'
-import { useFetchMarkets } from '../hooks/useFetchMarkets'
+import { useFetchMarkets } from '../hooks/useMarkets'
+import { useWalletBalance } from '../hooks/useWalletBalance'
 
 const Title: FC<{
   children: React.ReactNode
@@ -31,15 +32,16 @@ export default function Earn() {
     toast.error(error.message)
   }, [error])
 
-  const { markets, marketsAreLoading } = useFetchMarkets()
+  const { markets, depositBalances, fetchDepositBalances } = useFetchMarkets()
+  const { getNativeBalance, getPSP22Balance } = useWalletBalance()
 
   const WAZERO = markets?.find((market) => market.symbol === 'WAZERO')
 
-  const { deposit, depositNative, depositIsLoading, depositNativeIsLoading } = useEarnDeposit({
+  const { deposit, depositNative } = useEarnDeposit({
     marketAddress: WAZERO?.address || '',
   })
 
-  const { withdraw, withdrawNative, withdrawIsLoading, withdrawNativeIsLoading } = useEarnWithdraw({
+  const { withdraw, withdrawNative } = useEarnWithdraw({
     marketAddress: WAZERO?.address || '',
   })
 
@@ -48,6 +50,7 @@ export default function Earn() {
 
   const [isDeposit, setIsDeposit] = useState(true)
   const [amount, setAmount] = useState<string>('')
+  const [walletBalance, setWalletBalance] = useState<string>('')
 
   const toWrapOrUnwrap = asset === AZERO
   const inputLabel = isDeposit ? 'Send' : 'Receive'
@@ -55,7 +58,7 @@ export default function Earn() {
     ? `Deposit${toWrapOrUnwrap ? ' & Wrap' : ''}`
     : `Withdraw${toWrapOrUnwrap ? ' & Unwrap' : ''}`
 
-  const functionToCall = isDeposit
+  const depositOrWithdraw = isDeposit
     ? asset === AZERO
       ? depositNative
       : deposit
@@ -65,6 +68,25 @@ export default function Earn() {
 
   const formattedAmount = Number(amount) * 10 ** asset.decimals
 
+  const depositedBalance = depositBalances?.[WAZERO?.address || ''] || 0
+
+  const getWalletBalance = asset === AZERO ? getNativeBalance : getPSP22Balance
+
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      if (!getWalletBalance) return
+      const balance = await getWalletBalance(asset)
+      setWalletBalance(balance || '0')
+    }
+    fetchWalletBalance()
+  }, [asset, getWalletBalance])
+
+  const handleDepositOrWithdraw = async () => {
+    if (!amount) return
+    await depositOrWithdraw({ amount: formattedAmount })
+    await fetchDepositBalances()
+  }
+
   return (
     <>
       <Navbar />
@@ -73,6 +95,12 @@ export default function Earn() {
           <div>
             <Title>Earn - Fairpetuals Pool</Title>
             <Subtitle>Deposit wAZERO to earn fees from the protocol.</Subtitle>
+          </div>
+          <div className="flex flex-row gap-2">
+            <Subtitle>Your locked tokens:</Subtitle>
+            <Subtitle>
+              <span className="font-bold text-violet-500">{depositedBalance} wAZERO</span>
+            </Subtitle>
           </div>
           <div className="flex min-w-[35em] flex-col gap-4 rounded bg-violet-950 p-4">
             <Switcher>
@@ -87,13 +115,14 @@ export default function Earn() {
               topLeftLabel={inputLabel}
               selectedAssetSymbol={asset.symbol}
               markets={assets}
-              amount={amount}
-              setAmount={setAmount}
+              inputAmount={amount}
+              walletBalance={walletBalance}
+              setInputAmount={setAmount}
               onSetAsset={setAsset}
             />
             <Button
               className="rounded-[0.35em]"
-              onClick={() => functionToCall({ amount: formattedAmount })}
+              onClick={handleDepositOrWithdraw}
               disabled={amount === '' || !formattedAmount}
             >
               <span className="text-[1.1em] font-bold">{buttonLabel}</span>
