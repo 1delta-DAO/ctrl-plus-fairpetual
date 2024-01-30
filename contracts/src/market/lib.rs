@@ -179,6 +179,38 @@ pub mod market {
             self.calculate_liquidation_price(entry_price, leverage, is_long)
         }
 
+        #[ink(message)]
+        pub fn view_position_pnl(
+            &self,
+            user: AccountId,
+            id: u128,
+        ) -> Result<i128, MarketError> {
+            let position = self.positions
+                .get((user, id))
+                .ok_or(MarketError::PositionNotFound)?;
+
+            let new_price = self.view_market_price()?;
+
+            self.calculate_pnl_percent(position.entry_price, new_price, position.leverage, position.is_long)
+        }
+
+        #[ink(message)]
+        pub fn view_all(
+            &self,
+            user: AccountId,
+        ) -> Result<Vec<(Position, i128, u128)>, MarketError> {
+            let positions = self.view_positions(user);
+            let new_price = self.view_market_price()?;
+
+            let mut data = Vec::new();
+            for position in positions {
+                let pnl = self.calculate_pnl_percent(position.entry_price, new_price, position.leverage, position.is_long)?;
+                data.push((position, pnl, new_price));
+            }
+
+            Ok(data)
+        }
+
         fn get_symbol_and_decimals(&self, token: AccountId) -> Result<(String, u8), MarketError> {
             let metadata: contract_ref!(PSP22Metadata) = token.into();
 
