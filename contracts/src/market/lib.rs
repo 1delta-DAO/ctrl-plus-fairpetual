@@ -501,7 +501,7 @@ pub mod market {
 
             let mut ids_for_user = self.ids_per_user.get(caller).unwrap_or_default();
             if !ids_for_user.contains(&id) {
-                return Err(MarketError::NotLiquidatable);
+                return Err(MarketError::PositionNotFound);
             }
 
             let (underlying_asset_symbol, underlying_asset_decimals) =
