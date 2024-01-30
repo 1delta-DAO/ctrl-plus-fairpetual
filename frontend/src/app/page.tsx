@@ -28,7 +28,7 @@ export default function Home() {
   }
 
   const { markets } = useMarkets()
-  const { positions } = usePositions({ markets })
+  const { positions, fetchPositions } = usePositions({ markets })
 
   return (
     <>
@@ -40,7 +40,7 @@ export default function Home() {
           <PositionsTable markets={markets} positions={positions} />
         </div>
         <div className="w-[40rem]">
-          <PositionManagement markets={markets} />
+          <PositionManagement markets={markets} fetchPositions={fetchPositions} />
         </div>
       </div>
     </>

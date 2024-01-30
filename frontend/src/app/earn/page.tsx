@@ -95,42 +95,52 @@ export default function Earn() {
     <>
       <Navbar />
       <div className="container relative flex max-w-[1600px] grow items-start gap-4 p-20">
-        <div className="mx-auto flex w-fit flex-col gap-4">
+        <div className="mx-auto flex w-fit flex-col gap-8">
           <div>
             <Title>Earn - Fairpetuals Pool</Title>
             <Subtitle>Deposit wAZERO to earn fees from the protocol.</Subtitle>
           </div>
-          <div className="flex flex-row gap-2">
-            <Subtitle>Your locked tokens:</Subtitle>
-            <Subtitle>
-              <span className="font-bold text-violet-500">{depositedBalance} wAZERO</span>
-            </Subtitle>
-          </div>
-          <div className="flex min-w-[35em] flex-col gap-4 rounded bg-violet-950 p-4">
-            <Switcher>
-              <SwitcherButton active={isDeposit} onClick={() => setIsDeposit(true)}>
-                Deposit
-              </SwitcherButton>
-              <SwitcherButton active={!isDeposit} onClick={() => setIsDeposit(false)}>
-                Withdraw
-              </SwitcherButton>
-            </Switcher>
-            <InputBox
-              topLeftLabel={inputLabel}
-              selectedAssetSymbol={asset.symbol}
-              markets={assets}
-              inputAmount={amount}
-              walletBalance={walletBalance}
-              setInputAmount={setAmount}
-              onSetAsset={setAsset}
-            />
-            <Button
-              className="rounded-[0.35em]"
-              onClick={handleDepositOrWithdraw}
-              disabled={amount === '' || !formattedAmount}
-            >
-              <span className="text-[1.1em] font-bold">{buttonLabel}</span>
-            </Button>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-row justify-between">
+              <div className="flex gap-2">
+                <Subtitle>Your locked tokens:</Subtitle>
+                <Subtitle>
+                  <span className="font-bold text-violet-500">{depositedBalance} wAZERO</span>
+                </Subtitle>
+              </div>
+              <div className="flex gap-2">
+                <Subtitle>APR:</Subtitle>
+                <Subtitle>
+                  <span className="font-bold text-violet-500">13.35%</span>
+                </Subtitle>
+              </div>
+            </div>
+            <div className="flex min-w-[35em] flex-col gap-4 rounded bg-violet-950 p-4">
+              <Switcher>
+                <SwitcherButton active={isDeposit} onClick={() => setIsDeposit(true)}>
+                  Deposit
+                </SwitcherButton>
+                <SwitcherButton active={!isDeposit} onClick={() => setIsDeposit(false)}>
+                  Withdraw
+                </SwitcherButton>
+              </Switcher>
+              <InputBox
+                topLeftLabel={inputLabel}
+                selectedAssetSymbol={asset.symbol}
+                markets={assets}
+                inputAmount={amount}
+                walletBalance={walletBalance}
+                setInputAmount={setAmount}
+                onSetAsset={setAsset}
+              />
+              <Button
+                className="rounded-[0.35em]"
+                onClick={handleDepositOrWithdraw}
+                disabled={amount === '' || !formattedAmount}
+              >
+                <span className="text-[1.1em] font-bold">{buttonLabel}</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
