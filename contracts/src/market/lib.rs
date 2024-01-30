@@ -578,13 +578,13 @@ pub mod market {
                     .checked_div(100)
                     .ok_or(MarketError::Overflow(String::from("close_4")))?;
 
-                let rest_collateral_usd: u128 = position
-                    .collateral_usd
-                    .checked_add(pnl_usd as u128)
+                let rest_collateral_usd: i128 = (position
+                    .collateral_usd as i128)
+                    .checked_add(pnl_usd)
                     .ok_or(MarketError::Overflow(String::from("close_5")))?;
 
                 let rest_collateral_amount = self.calculate_asset_amount_from_usd(
-                    rest_collateral_usd,
+                    rest_collateral_usd as u128,
                     collateral_price,
                     collateral_asset_decimals,
                 )?;
