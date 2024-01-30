@@ -529,6 +529,7 @@ pub mod market {
         #[ink(message)]
         pub fn close(&mut self, id: u128) -> Result<(), MarketError> {
             let caller = self.env().caller();
+            let contract = self.env().account_id();
 
             let position = self
                 .positions
@@ -599,6 +600,14 @@ pub mod market {
                 vault
                     .withdraw(caller, id, rest_collateral_amount, caller)
                     .map_err(|err| MarketError::VaultError(err))?;
+
+                let collateral_for_contract: u128 = position.collateral_amount
+                    .checked_sub(rest_collateral_amount)
+                    .ok_or(MarketError::Overflow(String::from("close_6")))?;
+
+                vault
+                    .withdraw(caller, id, collateral_for_contract, contract)
+                    .map_err(|err| MarketError::VaultError(err))?;
             } else {
                 vault
                     .withdraw(caller, id, position.collateral_amount, caller)
@@ -637,6 +646,7 @@ pub mod market {
         #[ink(message)]
         pub fn liquidate(&mut self, user: AccountId, id: u128) -> Result<(), MarketError> {
             let caller = self.env().caller();
+            let contract = self.env().account_id();
 
             let mut ids_for_user = self.ids_per_user.get(user).unwrap_or_default();
             if !ids_for_user.contains(&id) {
@@ -707,6 +717,14 @@ pub mod market {
 
             vault
                 .withdraw(user, id, caller_collateral as u128, caller)
+                .map_err(|err| MarketError::VaultError(err))?;
+
+            let collateral_for_contract: u128 = position.collateral_amount
+                .checked_sub(leftover_collateral as u128)
+                .ok_or(MarketError::Overflow(String::from("close_6")))?;
+
+            vault
+                .withdraw(caller, id, collateral_for_contract, contract)
                 .map_err(|err| MarketError::VaultError(err))?;
 
             let index_to_remove = ids_for_user.iter().position(|&x| x == id).unwrap();
