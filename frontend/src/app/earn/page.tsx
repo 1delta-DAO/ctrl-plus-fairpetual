@@ -68,8 +68,6 @@ export default function Earn() {
 
   const formattedAmount = Number(amount) * 10 ** asset.decimals
 
-  const depositedBalance = depositBalances?.[WAZERO?.address || ''] || 0
-
   const getWalletBalance = asset === AZERO ? getNativeBalance : getPSP22Balance
 
   useEffect(() => {
@@ -90,6 +88,17 @@ export default function Earn() {
   useEffect(() => {
     setAmount('')
   }, [isDeposit])
+
+  // useEffect(() => {
+
+  //   if (!depositBalances) {
+  //     fetchDepositBalances()
+  //   } else {
+  //     setDepositedBalance(depositBalances[WAZERO?.address || ''] || 0)
+  //   }
+  // }, [depositBalances])
+
+  const depositedBalance = depositBalances ? depositBalances[WAZERO?.address || ''] || 0 : 0
 
   return (
     <>

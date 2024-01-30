@@ -27,7 +27,7 @@ const PositionManagement: FC<PositionManagementProps> = ({
   fetchDepositBalances,
 }) => {
   const [long, setLong] = useState(true)
-  const [leverage, setLeverage] = useState<number>(2)
+  const [leverage, setLeverage] = useState<number>(1)
 
   const LongOrShortLabel = long ? 'Long' : 'Short'
 
@@ -49,13 +49,14 @@ const PositionManagement: FC<PositionManagementProps> = ({
   const { openPositionWithNative } = useManagePosition({ marketAddress: assetOut?.address ?? '' })
   const { getNativeBalance, getPSP22Balance } = useWalletBalance()
 
-  const longOrShort = long ? (assetIn === AZERO ? openPositionWithNative : null) : null
+  const longOrShort = assetIn === AZERO ? openPositionWithNative : null
 
   const handleLongOrShort = async () => {
     if (longOrShort && assetIn) {
       await longOrShort({
         amount: parseFloat(assetInAmount) * 10 ** assetIn?.decimals,
         leverage: leverage,
+        isLong: long,
       })
       await fetchPositions()
     }

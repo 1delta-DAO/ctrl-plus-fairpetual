@@ -57,13 +57,10 @@ const deploy_faker = async () => {
 
   const { abi, wasm } = await getDeploymentData('faker')
 
-  const pair = "AZERO/USD"
+  const pair = 'AZERO/USD'
   const price = 100000000000000
 
-  const faker = await deployContract(api, account, abi, wasm, 'new', [
-    pair, 
-    price
-  ])
+  const faker = await deployContract(api, account, abi, wasm, 'new', [pair, price])
 
   await writeContractAddresses(chain.network, {
     faker,
@@ -101,15 +98,15 @@ const deploy_market = async () => {
 }
 
 const deploy_market_with_manager = async (
-    managerAddress,
-    marketHash,
-    name,
-    symbol,
-    underlyingAsset,
-    liquidationThreshold,
-    liquidationPenalty,
-    protocolFee,
-  ) => {
+  managerAddress,
+  marketHash,
+  name,
+  symbol,
+  underlyingAsset,
+  liquidationThreshold,
+  liquidationPenalty,
+  protocolFee,
+) => {
   const initParams = await initPolkadotJs()
   const { api, chain, account } = initParams
 
@@ -122,7 +119,7 @@ const deploy_market_with_manager = async (
     underlyingAsset,
     liquidationThreshold,
     liquidationPenalty,
-    protocolFee
+    protocolFee,
   ]
 
   await contractTx(api, account, contract, 'deploy_market', {}, params)
@@ -134,9 +131,7 @@ const add_asset_to_vault = async (managerAddress, asset) => {
 
   const { abi, wasm } = await getDeploymentData('manager')
   const contract = new ContractPromise(api, abi, managerAddress)
-  const params = [
-    asset,
-  ]
+  const params = [asset]
 
   await contractTx(api, account, contract, 'add_collateral_asset', {}, params)
 }
@@ -154,9 +149,9 @@ const deploy_manager = async (version, vaultHash, wazeroAddress, oracleAddressPa
 
   const { abi, wasm } = await getDeploymentData('manager')
   const manager = await deployContract(api, account, abi, wasm, 'new', [
-    version, 
-    vaultHash, 
-    oracleAddress, 
+    version,
+    vaultHash,
+    oracleAddress,
     wazeroAddress,
   ])
 
@@ -179,10 +174,10 @@ const main = async () => {
     await deploy_market_with_manager(
       managerAddress,
       marketHash,
-      "Wrapped Azero",
-      "WAZERO",
+      'Wrapped Azero',
+      'WAZERO',
       wazeroAddress,
-      -10,
+      -60,
       10,
       5,
     )

@@ -21,19 +21,23 @@ export const usePositions = ({ markets }: usePositionsProps) => {
     for (const market of markets) {
       const marketAddress = market.address
       const marketContract = new ContractPromise(api, marketAbi, marketAddress)
-      const result = await contractQuery(api, marketAddress, marketContract, 'view_positions', {}, [
+      const result = await contractQuery(api, marketAddress, marketContract, 'view_all', {}, [
         activeAccount?.address ?? '',
       ])
       const {
-        output: marketPositions,
+        output: marketPositionsData,
         isError: isError,
         decodedOutput: decodedOutput,
-      } = decodeOutput(result, marketContract, 'view_positions')
+      } = decodeOutput(result, marketContract, 'view_all')
       if (isError) throw new Error(decodedOutput)
 
       const positions: MarketPosition[] = []
 
-      for (const position of marketPositions) {
+      for (const positionData of marketPositionsData.Ok) {
+        const position = positionData[0]
+        const pnlPercentage = positionData[1]
+        console.log('pnlPercentage', pnlPercentage)
+        const price = positionData[2]
         const marketPosition: MarketPosition = {
           user: position.user,
           id: position.id,
@@ -45,9 +49,13 @@ export const usePositions = ({ markets }: usePositionsProps) => {
           leverage: position.leverage,
           isLong: position.isLong,
           blockOpen: position.blockOpen,
+          pnlPercentage,
+          price,
         }
         positions.push(marketPosition)
       }
+
+      console.log(positions)
 
       setPositions((prevPositions) => ({
         ...prevPositions,

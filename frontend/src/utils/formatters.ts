@@ -4,11 +4,20 @@ export const formatNumber = (number: number) => {
 
 export const formatPercentage = (percentage: number) => {
   const percentageFormatted = formatNumber(percentage)
-  return percentage > 0 ? `+${percentageFormatted}%` : `-${percentageFormatted}%`
+  const percentageFormattedWithoutSign = percentageFormatted.replace(/[-+]/g, '')
+  return percentage >= 0
+    ? `+${percentageFormattedWithoutSign}%`
+    : `-${percentageFormattedWithoutSign}%`
 }
 
 export const formatDollarAmount = (amount: number) => {
   return `$${formatNumber(amount)}`
+}
+
+export const formatDollarAmountWithSign = (amount: number) => {
+  const amountFormatted = formatNumber(amount)
+  const amountFormattedWithoutSign = amountFormatted.replace(/[-+]/g, '')
+  return amount >= 0 ? `+$${amountFormattedWithoutSign}` : `-$${amountFormattedWithoutSign}`
 }
 
 export const formatWithDecimals = (amount: string, decimals: number) => {

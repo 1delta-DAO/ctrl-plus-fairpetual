@@ -1,9 +1,15 @@
 import Image from 'next/image'
 import { FC } from 'react'
 
+import { useManagePosition } from '@/app/hooks/useManagePosition'
 import { Button } from '@/components/ui/button'
 import { SymbolsToIcons } from '@/utils/constants'
-import { formatDollarAmount, formatPercentage, formatWithDecimals } from '@/utils/formatters'
+import {
+  formatDollarAmount,
+  formatDollarAmountWithSign,
+  formatPercentage,
+  formatWithDecimals,
+} from '@/utils/formatters'
 import { Market, MarketPosition } from '@/utils/types'
 
 interface RowProps {
@@ -12,18 +18,27 @@ interface RowProps {
 }
 
 const Row = ({ position, market }: RowProps) => {
-  const price = 1.12
-  const positionNetValue = 0
-  const positionPnl = 0
-  const positionPnlPercentage = 0
+  const { closePosition } = useManagePosition({ marketAddress: market.address })
+
+  const price = formatWithDecimals(position.price, 6)
+  const positionPnlPercentage = formatPercentage(parseInt(position.pnlPercentage))
 
   const longShortcolor = position.isLong ? 'text-green-500' : 'text-red-500'
-  const pnlColor = positionPnl > 0 ? 'text-green-500' : 'text-red-500'
+  const pnlColor = parseInt(position.pnlPercentage) >= 0 ? 'text-green-500' : 'text-red-500'
 
   const collateralAmount = formatWithDecimals(position.collateralAmount, market.decimals)
+  const collateralUsd = formatWithDecimals(position.collateralUsd, 6)
+  const positionNetValue = collateralUsd + collateralUsd * (parseInt(position.pnlPercentage) / 100)
+  const pnlUsd = positionNetValue - collateralUsd
   const size = collateralAmount * parseInt(position.leverage)
   const entryPrice = formatWithDecimals(position.entryPrice, 6)
   const liquidationPrice = formatWithDecimals(position.liquidationPrice, 6)
+
+  const handleClosePosition = async () => {
+    if (closePosition) {
+      await closePosition(position.id)
+    }
+  }
 
   return (
     <tr className="text-sm">
@@ -52,7 +67,7 @@ const Row = ({ position, market }: RowProps) => {
         <div className="flex flex-col">
           <span>{formatDollarAmount(positionNetValue)}</span>
           <span className={pnlColor}>
-            {formatDollarAmount(positionPnl)} ({formatPercentage(positionPnlPercentage)})
+            {formatDollarAmountWithSign(pnlUsd)} ({positionPnlPercentage})
           </span>
         </div>
       </td>
@@ -61,7 +76,7 @@ const Row = ({ position, market }: RowProps) => {
 
       <td>
         <div className="flex flex-col">
-          <span>{formatDollarAmount(collateralAmount)}</span>
+          <span>{formatDollarAmount(collateralUsd)}</span>
           <span className="text-gray-400">({collateralAmount} AZERO)</span>
         </div>
       </td>
@@ -78,6 +93,7 @@ const Row = ({ position, market }: RowProps) => {
             height: 'auto',
             padding: '0.5em 1em',
           }}
+          onClick={handleClosePosition}
         >
           Close
         </Button>
@@ -111,7 +127,7 @@ const PositionsTable: FC<PositionsTableProps> = ({ markets, positions }) => {
               <th>Size</th>
               <th>Collateral</th>
               <th>Entry Price</th>
-              <th>Mark Price</th>
+              <th>Mark. Price</th>
               <th>Liq. Price</th>
               <th></th>
             </tr>

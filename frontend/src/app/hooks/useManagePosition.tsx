@@ -16,13 +16,16 @@ export const useManagePosition = ({ marketAddress }: useManagePositionProps) => 
 
   const [openPositionWithNativeIsLoading, setOpenPositionWithNativeIsLoading] =
     useState<boolean>(false)
+  const [closePositionIsLoading, setClosePositionIsLoading] = useState<boolean>(false)
 
   const openPositionWithNative = async ({
     amount,
     leverage,
+    isLong,
   }: {
     amount: number
     leverage: number
+    isLong: boolean
   }) => {
     if (!activeAccount || !marketContract || !api) {
       toast.error('Wallet not connected. Try again…')
@@ -36,7 +39,7 @@ export const useManagePosition = ({ marketAddress }: useManagePositionProps) => 
         marketContract,
         'open_native',
         { value: amount },
-        [true, leverage],
+        [isLong, leverage],
       )
     } catch (e) {
       console.error(e)
@@ -45,8 +48,27 @@ export const useManagePosition = ({ marketAddress }: useManagePositionProps) => 
     }
   }
 
+  const closePosition = async (positionId: string) => {
+    if (!activeAccount || !marketContract || !api) {
+      toast.error('Wallet not connected. Try again…')
+      return
+    }
+    setClosePositionIsLoading(true)
+    try {
+      await contractTxWithToast(api, activeAccount.address, marketContract, 'close', {}, [
+        positionId,
+      ])
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setClosePositionIsLoading(false)
+    }
+  }
+
   return {
     openPositionWithNative,
+    closePosition,
     openPositionWithNativeIsLoading,
+    closePositionIsLoading,
   }
 }

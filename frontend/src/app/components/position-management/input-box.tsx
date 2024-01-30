@@ -38,7 +38,10 @@ const InputBox: FC<InputBoxProps> = ({
     <div className="flex w-full flex-col gap-2 rounded-[0.35em] bg-violet-800 p-4">
       <div className="flex w-full justify-between text-sm text-gray-300">
         <span>{topLeftLabel}</span>
-        <span>Wallet Balance: {walletBalance}</span>
+        <div>
+          <span>Wallet Balance: </span>
+          <span className="font-bold">{walletBalance}</span>
+        </div>
       </div>
       <div className="flex w-full justify-between">
         <input

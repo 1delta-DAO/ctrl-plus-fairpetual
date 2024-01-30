@@ -11,7 +11,6 @@ export interface Asset {
 
 export interface Market extends Asset {
   address: string
-  price?: number
 }
 
 export interface Position {
@@ -34,4 +33,6 @@ export interface MarketPosition {
   leverage: string
   isLong: boolean
   blockOpen: string
+  pnlPercentage: string
+  price: string
 }
