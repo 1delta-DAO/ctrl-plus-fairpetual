@@ -15,9 +15,10 @@ import InputBox from './input-box'
 
 interface PositionManagementProps {
   markets: Market[] | undefined
+  fetchPositions: () => Promise<void>
 }
 
-const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
+const PositionManagement: FC<PositionManagementProps> = ({ markets, fetchPositions }) => {
   const [long, setLong] = useState(true)
   const [leverage, setLeverage] = useState<number>(2)
 
@@ -41,12 +42,13 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
 
   const longOrShort = long ? (assetIn === AZERO ? openPositionWithNative : null) : null
 
-  const handleLongOrShort = () => {
+  const handleLongOrShort = async () => {
     if (longOrShort) {
-      longOrShort({
+      await longOrShort({
         amount: parseFloat(assetInAmount),
         leverage: leverage,
       })
+      await fetchPositions()
     }
   }
 
