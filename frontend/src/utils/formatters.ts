@@ -1,5 +1,5 @@
-export const formatNumber = (number: number) => {
-  return number.toLocaleString(undefined, { maximumFractionDigits: 2 })
+export const formatNumber = (number: number, precision = 2) => {
+  return number.toLocaleString(undefined, { maximumFractionDigits: precision })
 }
 
 export const formatPercentage = (percentage: number) => {
@@ -10,8 +10,8 @@ export const formatPercentage = (percentage: number) => {
     : `-${percentageFormattedWithoutSign}%`
 }
 
-export const formatDollarAmount = (amount: number) => {
-  return `$${formatNumber(amount)}`
+export const formatDollarAmount = (amount: number, precision = 2) => {
+  return `$${formatNumber(amount, precision)}`
 }
 
 export const formatDollarAmountWithSign = (amount: number) => {

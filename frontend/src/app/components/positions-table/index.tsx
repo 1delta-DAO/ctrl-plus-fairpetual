@@ -20,7 +20,6 @@ interface RowProps {
 const Row = ({ position, market }: RowProps) => {
   const { closePosition } = useManagePosition({ marketAddress: market.address })
 
-  const price = formatWithDecimals(position.price, 6)
   const positionPnlPercentage = formatPercentage(parseInt(position.pnlPercentage))
 
   const longShortcolor = position.isLong ? 'text-green-500' : 'text-red-500'
@@ -31,7 +30,9 @@ const Row = ({ position, market }: RowProps) => {
   const positionNetValue = collateralUsd + collateralUsd * (parseInt(position.pnlPercentage) / 100)
   const pnlUsd = positionNetValue - collateralUsd
   const size = collateralAmount * parseInt(position.leverage)
+
   const entryPrice = formatWithDecimals(position.entryPrice, 6)
+  const marketPrice = formatWithDecimals(position.price, 6)
   const liquidationPrice = formatWithDecimals(position.liquidationPrice, 6)
 
   const handleClosePosition = async () => {
@@ -81,11 +82,11 @@ const Row = ({ position, market }: RowProps) => {
         </div>
       </td>
 
-      <td>{formatDollarAmount(entryPrice)}</td>
+      <td>{formatDollarAmount(entryPrice, 4)}</td>
 
-      <td>{formatDollarAmount(price)}</td>
+      <td>{formatDollarAmount(marketPrice, 4)}</td>
 
-      <td>{formatDollarAmount(liquidationPrice)}</td>
+      <td>{formatDollarAmount(liquidationPrice, 4)}</td>
 
       <td>
         <Button
