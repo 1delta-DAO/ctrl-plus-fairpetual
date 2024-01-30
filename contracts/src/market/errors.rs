@@ -10,6 +10,7 @@ pub enum MarketError {
     BurnFailed,
     LangError,
     MintFailed,
+    MissingDeposits,
     NotLiquidatable,
     NotSupported,
     Overflow(String),

@@ -312,6 +312,10 @@ pub mod market {
         ) -> Result<(), MarketError> {
             let mut collateral: contract_ref!(PSP22) = collateral_asset.into();
 
+            if self.total_supply() <= 0 {
+                return Err(MarketError::MissingDeposits);
+            }
+
             let (collateral_symbol, collateral_decimals) =
                 self.get_symbol_and_decimals(collateral_asset)?;
             let collateral_price = self.get_price(collateral_symbol)?;
