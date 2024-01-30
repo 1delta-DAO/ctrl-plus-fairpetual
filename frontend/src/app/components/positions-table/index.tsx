@@ -83,6 +83,8 @@ interface PositionsTableProps {
 }
 
 const PositionsTable: FC<PositionsTableProps> = ({ markets, positions }) => {
+  const positionsLength = Object.keys(positions).length
+
   return (
     <>
       <div className="flex w-full items-center gap-14 rounded-[0.35em] bg-violet-800 p-3">
@@ -100,9 +102,17 @@ const PositionsTable: FC<PositionsTableProps> = ({ markets, positions }) => {
             </tr>
           </thead>
           <tbody>
-            {Positions.map((position, index) => {
-              return <Row key={index} position={position} />
-            })}
+            {positionsLength > 0 ? (
+              Positions.map((position, index) => {
+                return <Row key={index} position={position} />
+              })
+            ) : (
+              <tr>
+                <td colSpan={8} className="p-6 text-center text-lg font-bold">
+                  You have no open positions, open a trade!
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
