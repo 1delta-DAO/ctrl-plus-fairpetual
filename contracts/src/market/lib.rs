@@ -135,7 +135,15 @@ pub mod market {
             positions
         }
 
-        fn get_price(&self, symbol: String) -> Result<u128, MarketError> {
+        #[ink(message)]
+        pub fn view_market_price(&self) -> Result<u128, MarketError> {
+            let metadata: contract_ref!(PSP22Metadata) = self.underlying_asset.into();
+            let symbol = metadata.token_symbol().ok_or(MarketError::OracleFailed)?;
+            self.get_price(symbol)
+        }
+
+        #[ink(message)]
+        pub fn get_price(&self, symbol: String) -> Result<u128, MarketError> {
             let unwrapped_symbol = &symbol[1..];
             let pair_symbol = format!("{unwrapped_symbol}/USD");
 
@@ -149,7 +157,10 @@ pub mod market {
                 .ok_or(MarketError::OracleFailed)?;
 
             let abbreviated_price = price
-                .checked_div((10 as u128).pow(oracle_decimals as u32 - target_decimals as u32))
+                .checked_div(
+                    10u128.checked_pow(oracle_decimals as u32 - target_decimals as u32)
+                        .ok_or(MarketError::Overflow)?
+                )
                 .ok_or(MarketError::Overflow);
 
             abbreviated_price
@@ -174,7 +185,10 @@ pub mod market {
             asset_amount
                 .checked_mul(price)
                 .ok_or(MarketError::Overflow)?
-                .checked_div(asset_decimals as u128)
+                .checked_div(
+                    10u128.checked_pow(asset_decimals as u32)
+                        .ok_or(MarketError::Overflow)?
+                )
                 .ok_or(MarketError::Overflow)
         }
 
@@ -206,7 +220,10 @@ pub mod market {
             asset_decimals: u8,
         ) -> Result<u128, MarketError> {
             usd_amount
-                .checked_mul(asset_decimals as u128)
+                .checked_mul(
+                    10u128.checked_pow(asset_decimals as u32)
+                        .ok_or(MarketError::Overflow)?
+                )
                 .ok_or(MarketError::Overflow)?
                 .checked_div(price)
                 .ok_or(MarketError::Overflow)
