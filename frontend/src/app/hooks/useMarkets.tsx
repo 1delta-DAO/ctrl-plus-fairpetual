@@ -16,6 +16,7 @@ export const useMarkets = () => {
   const [marketsAreLoading, setMarketsAreLoading] = useState<boolean>(false)
   const [depositBalancesAreLoading, setDepositBalancesAreLoading] = useState<boolean>(false)
   const [marketsPriceAreLoading, setMarketsPriceAreLoading] = useState<boolean>(false)
+  const [liquidationPriceAreLoading, setLiquidationPriceAreLoading] = useState<boolean>(false)
   const [markets, setMarkets] = useState<Market[]>()
   const [depositBalances, setDepositBalances] = useState<{ [key: string]: number }>()
 
@@ -145,6 +146,52 @@ export const useMarkets = () => {
     }
   }
 
+  const fetchLiquidationPrice = async (
+    marketAddress: string,
+    leverage: number,
+    isLong: boolean,
+  ) => {
+    if (!api) return
+
+    setLiquidationPriceAreLoading(true)
+
+    try {
+      const marketContract = new ContractPromise(api, marketAbi, marketAddress)
+      const result = await contractQuery(
+        api,
+        marketAddress,
+        marketContract,
+        'view_liquidation_price',
+        {},
+        [marketAddress, leverage, isLong],
+      )
+      const {
+        output: liquidationPrice,
+        isError: isError,
+        decodedOutput: decodedOutput,
+      } = decodeOutput(result, marketContract, 'view_liquidation_price')
+      if (isError) throw new Error(decodedOutput)
+
+      console.log('liq price', liquidationPrice)
+
+      const updatedMarkets = markets?.map((market) => {
+        if (market.address === marketAddress) {
+          return {
+            ...market,
+            liquidationPrice,
+          }
+        }
+        return market
+      })
+      setMarkets(updatedMarkets)
+    } catch (e) {
+      console.error(e)
+      toast.error('Error while fetching liquidation price. Try again…')
+    } finally {
+      setLiquidationPriceAreLoading(false)
+    }
+  }
+
   useEffect(() => {
     const fetchMarketData = async () => {
       await fetchMarkets()
@@ -161,5 +208,6 @@ export const useMarkets = () => {
     depositBalancesAreLoading,
     marketsPriceAreLoading,
     fetchDepositBalances,
+    fetchLiquidationPrice,
   }
 }

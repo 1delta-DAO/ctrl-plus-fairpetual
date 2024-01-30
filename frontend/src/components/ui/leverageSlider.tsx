@@ -17,7 +17,7 @@ const LeverageSlider: FC<LeverageSliderProps> = ({ leverage, setLeverage }) => {
   const levels = [
     {
       min: 1,
-      max: 100,
+      max: 10,
       color: '#5b21b6',
     },
     {
@@ -28,12 +28,10 @@ const LeverageSlider: FC<LeverageSliderProps> = ({ leverage, setLeverage }) => {
   ]
 
   // e.g., [{ label: '1x', value: 1 }, { label: '2x', value: 2 }, ...]
-  let ticks = Array.from({ length: 10 }, (_, i) => ({
-    label: `${(i + 1) * 10}x`,
-    value: (i + 1) * 10,
+  const ticks = Array.from({ length: 10 }, (_, i) => ({
+    label: `${i + 1}x`,
+    value: i + 1,
   }))
-
-  ticks = [{ label: '1x', value: 1 }, ...ticks]
 
   return (
     <>
@@ -43,7 +41,7 @@ const LeverageSlider: FC<LeverageSliderProps> = ({ leverage, setLeverage }) => {
         onChange={onChange}
         showTicks
         min={1}
-        max={100}
+        max={10}
         ticks={ticks}
         levels={Number(leverage) > 1 ? levels : [levels[0]]}
         aria-label="Leverage Slider"

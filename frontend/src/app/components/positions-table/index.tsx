@@ -15,9 +15,10 @@ import { Market, MarketPosition } from '@/utils/types'
 interface RowProps {
   position: MarketPosition
   market: Market
+  fetchPositions: () => Promise<void>
 }
 
-const Row = ({ position, market }: RowProps) => {
+const Row = ({ position, market, fetchPositions }: RowProps) => {
   const { closePosition } = useManagePosition({ marketAddress: market.address })
 
   const positionPnlPercentage = formatPercentage(parseInt(position.pnlPercentage))
@@ -38,6 +39,7 @@ const Row = ({ position, market }: RowProps) => {
   const handleClosePosition = async () => {
     if (closePosition) {
       await closePosition(position.id)
+      await fetchPositions()
     }
   }
 
@@ -106,9 +108,10 @@ const Row = ({ position, market }: RowProps) => {
 interface PositionsTableProps {
   markets: Market[] | undefined
   positions: { [key: string]: MarketPosition[] }
+  fetchPositions: () => Promise<void>
 }
 
-const PositionsTable: FC<PositionsTableProps> = ({ markets, positions }) => {
+const PositionsTable: FC<PositionsTableProps> = ({ markets, positions, fetchPositions }) => {
   let noPositions = true
   for (const key in positions) {
     if (positions[key].length > 0) {
@@ -140,7 +143,14 @@ const PositionsTable: FC<PositionsTableProps> = ({ markets, positions }) => {
                 if (!marketPositions) return null
 
                 return marketPositions.map((marketPosition) => {
-                  return <Row key={marketPosition.id} position={marketPosition} market={market} />
+                  return (
+                    <Row
+                      key={marketPosition.id}
+                      position={marketPosition}
+                      market={market}
+                      fetchPositions={fetchPositions}
+                    />
+                  )
                 })
               })
             ) : (

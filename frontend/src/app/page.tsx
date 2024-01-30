@@ -37,7 +37,7 @@ export default function Home() {
         <div className="flex w-full flex-col items-center gap-4 rounded bg-violet-950 p-4">
           <ChartInfo ChartInfo={chartInfo} />
           <TradingViewChart />
-          <PositionsTable markets={markets} positions={positions} />
+          <PositionsTable markets={markets} positions={positions} fetchPositions={fetchPositions} />
         </div>
         <div className="w-[40rem]">
           <PositionManagement

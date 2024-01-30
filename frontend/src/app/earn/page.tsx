@@ -50,7 +50,7 @@ export default function Earn() {
 
   const [isDeposit, setIsDeposit] = useState(true)
   const [amount, setAmount] = useState<string>('')
-  const [walletBalance, setWalletBalance] = useState<string>('')
+  const [walletBalance, setWalletBalance] = useState<string | number>('')
 
   const toWrapOrUnwrap = asset === AZERO
   const inputLabel = isDeposit ? 'Send' : 'Receive'
@@ -107,7 +107,7 @@ export default function Earn() {
         <div className="mx-auto flex w-fit flex-col gap-8">
           <div>
             <Title>Earn - Fairpetuals Pool</Title>
-            <Subtitle>Deposit wAZERO to earn fees from the protocol.</Subtitle>
+            <Subtitle>Deposit xAZERO to earn fees from the protocol.</Subtitle>
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex flex-row justify-between">

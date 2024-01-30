@@ -18,7 +18,7 @@ interface InputBoxProps {
   markets: Market[] | undefined
   selectedAssetSymbol: string
   inputAmount: string
-  walletBalance: string
+  walletBalance: string | number
   enableInput?: boolean
   setInputAmount: (value: string) => void
   onSetAsset: (market: Market) => void
