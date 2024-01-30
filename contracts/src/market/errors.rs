@@ -12,7 +12,7 @@ pub enum MarketError {
     MintFailed,
     NotLiquidatable,
     NotSupported,
-    Overflow,
+    Overflow(String),
     PositionNotFound,
     TransferFailed,
     OracleFailed,

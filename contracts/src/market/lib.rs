@@ -159,9 +159,9 @@ pub mod market {
             let abbreviated_price = price
                 .checked_div(
                     10u128.checked_pow(oracle_decimals as u32 - target_decimals as u32)
-                        .ok_or(MarketError::Overflow)?
+                        .ok_or(MarketError::Overflow(String::from("get_price")))?
                 )
-                .ok_or(MarketError::Overflow);
+                .ok_or(MarketError::Overflow(String::from("get_price")));
 
             abbreviated_price
         }
@@ -197,12 +197,12 @@ pub mod market {
         ) -> Result<u128, MarketError> {
             asset_amount
                 .checked_mul(price)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("calculate_usd_from_asset_amount_1")))?
                 .checked_div(
                     10u128.checked_pow(asset_decimals as u32)
-                        .ok_or(MarketError::Overflow)?
+                        .ok_or(MarketError::Overflow(String::from("calculate_usd_from_asset_amount_2")))?
                 )
-                .ok_or(MarketError::Overflow)
+                .ok_or(MarketError::Overflow(String::from("calculate_usd_from_asset_amount_3")))
         }
 
         fn calculate_pnl_percent(
@@ -215,15 +215,15 @@ pub mod market {
             let sign = if is_long { 1 } else { -1 };
             (new_price as i128)
                 .checked_sub(old_price as i128)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("calculate_pnl_percent_1")))?
                 .checked_mul(sign)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("calculate_pnl_percent_2")))?
                 .checked_mul(leverage as i128)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("calculate_pnl_percent_3")))?
                 .checked_mul(100)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("calculate_pnl_percent_4")))?
                 .checked_div(old_price as i128)
-                .ok_or(MarketError::Overflow)
+                .ok_or(MarketError::Overflow(String::from("calculate_pnl_percent_5")))
         }
 
         fn calculate_asset_amount_from_usd(
@@ -235,11 +235,11 @@ pub mod market {
             usd_amount
                 .checked_mul(
                     10u128.checked_pow(asset_decimals as u32)
-                        .ok_or(MarketError::Overflow)?
+                        .ok_or(MarketError::Overflow(String::from("calculate_asset_amount_from_usd_1")))?
                 )
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("calculate_asset_amount_from_usd_2")))?
                 .checked_div(price)
-                .ok_or(MarketError::Overflow)
+                .ok_or(MarketError::Overflow(String::from("calculate_asset_amount_from_usd_3")))
         }
 
         fn wrap_native(&self, transferred_amount: u128) -> Result<(), MarketError> {
@@ -269,9 +269,9 @@ pub mod market {
             } else {
                 deposit_token_amount = amount
                     .checked_mul(self.total_supply())
-                    .ok_or(MarketError::Overflow)?
+                    .ok_or(MarketError::Overflow(String::from("calculate_amount_and_mint_1")))?
                     .checked_div(underlying_asset.balance_of(contract))
-                    .ok_or(MarketError::Overflow)?;
+                    .ok_or(MarketError::Overflow(String::from("calculate_amount_and_mint_2")))?;
             }
 
             self.data
@@ -291,9 +291,9 @@ pub mod market {
 
             let token_amount = deposit_token_amount
                 .checked_mul(underlying_asset.balance_of(contract))
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("burn_and_calculate_amount_1")))?
                 .checked_div(self.total_supply())
-                .ok_or(MarketError::Overflow)?;
+                .ok_or(MarketError::Overflow(String::from("burn_and_calculate_amount_2")))?;
 
             self.data
                 .burn(caller, deposit_token_amount)
@@ -371,15 +371,15 @@ pub mod market {
             let sign: i128 = if is_long { 1 } else { -1 };
             let result: i128 = (entry_price as i128)
                 .checked_mul(self.liquidation_threshold as i128)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("calculate_liquidation_price_1")))?
                 .checked_div(leverage as i128)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("calculate_liquidation_price_2")))?
                 .checked_div(100i128)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("calculate_liquidation_price_3")))?
                 .checked_mul(sign)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("calculate_liquidation_price_4")))?
                 .checked_add(entry_price as i128)
-                .ok_or(MarketError::Overflow)?;
+                .ok_or(MarketError::Overflow(String::from("calculate_liquidation_price_5")))?;
 
             Ok(result as u128)
         }
@@ -528,9 +528,9 @@ pub mod market {
 
                 let pnl_usd = pnl_percent
                     .checked_mul(position.collateral_usd as i128)
-                    .ok_or(MarketError::Overflow)?
+                    .ok_or(MarketError::Overflow(String::from("close_1")))?
                     .checked_div(100)
-                    .ok_or(MarketError::Overflow)?;
+                    .ok_or(MarketError::Overflow(String::from("close_2")))?;
 
                 let payout_amount = self.calculate_asset_amount_from_usd(
                     pnl_usd as u128,
@@ -545,14 +545,14 @@ pub mod market {
             } else if pnl_percent < 0 {
                 let pnl_usd = pnl_percent
                     .checked_mul(position.collateral_usd as i128)
-                    .ok_or(MarketError::Overflow)?
+                    .ok_or(MarketError::Overflow(String::from("close_3")))?
                     .checked_div(100)
-                    .ok_or(MarketError::Overflow)?;
+                    .ok_or(MarketError::Overflow(String::from("close_4")))?;
 
                 let rest_collateral_usd: u128 = position
                     .collateral_usd
                     .checked_add(pnl_usd as u128)
-                    .ok_or(MarketError::Overflow)?;
+                    .ok_or(MarketError::Overflow(String::from("close_5")))?;
 
                 let rest_collateral_amount = self.calculate_asset_amount_from_usd(
                     rest_collateral_usd,
@@ -572,6 +572,8 @@ pub mod market {
             let index_to_remove = ids_for_user.iter().position(|&x| x == id).unwrap();
             ids_for_user.swap_remove(index_to_remove);
             self.ids_per_user.insert(caller, &ids_for_user);
+
+            self.positions.remove((caller, id));
 
             Ok(())
         }
@@ -600,6 +602,11 @@ pub mod market {
         pub fn liquidate(&mut self, user: AccountId, id: u128) -> Result<(), MarketError> {
             let caller = self.env().caller();
 
+            let mut ids_for_user = self.ids_per_user.get(user).unwrap_or_default();
+            if !ids_for_user.contains(&id) {
+                return Err(MarketError::PositionNotFound);
+            }
+
             if !self.is_liquidatable(user, id)? {
                 return Err(MarketError::NotLiquidatable);
             }
@@ -621,21 +628,21 @@ pub mod market {
 
             let leftover_collateral = pnl_percent
                 .checked_mul(position.collateral_usd as i128)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("liquidate_1")))?
                 .checked_div(100)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("liquidate_2")))?
                 .checked_add(position.collateral_usd as i128)
-                .ok_or(MarketError::Overflow)?;
+                .ok_or(MarketError::Overflow(String::from("liquidate_3")))?;
 
             let seize_amount = leftover_collateral
                 .checked_mul(self.liquidation_penalty as i128)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("liquidate_4")))?
                 .checked_div(100)
-                .ok_or(MarketError::Overflow)?;
+                .ok_or(MarketError::Overflow(String::from("liquidate_5")))?;
 
             let owner_collateral = leftover_collateral
                 .checked_sub(seize_amount)
-                .ok_or(MarketError::Overflow)?;
+                .ok_or(MarketError::Overflow(String::from("liquidate_6")))?;
 
             let mut vault: contract_ref!(CollateralVault) = self.vault.into();
             vault
@@ -644,9 +651,9 @@ pub mod market {
 
             let deployer_collateral = seize_amount
                 .checked_mul(self.protocol_fee as i128)
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("liquidate_7")))?
                 .checked_div(100)
-                .ok_or(MarketError::Overflow)?;
+                .ok_or(MarketError::Overflow(String::from("liquidate_8")))?;
 
             vault
                 .withdraw(user, id, deployer_collateral as u128, self.owner)
@@ -654,17 +661,23 @@ pub mod market {
 
             let caller_collateral = seize_amount
                 .checked_mul(
-                    (100 as i128)
+                    (100i128)
                         .checked_sub(self.protocol_fee as i128)
-                        .ok_or(MarketError::Overflow)?,
+                        .ok_or(MarketError::Overflow(String::from("liquidate_9")))?
                 )
-                .ok_or(MarketError::Overflow)?
+                .ok_or(MarketError::Overflow(String::from("liquidate_10")))?
                 .checked_div(100)
-                .ok_or(MarketError::Overflow)?;
+                .ok_or(MarketError::Overflow(String::from("liquidate_11")))?;
 
             vault
                 .withdraw(user, id, caller_collateral as u128, caller)
                 .map_err(|err| MarketError::VaultError(err))?;
+
+            let index_to_remove = ids_for_user.iter().position(|&x| x == id).unwrap();
+            ids_for_user.swap_remove(index_to_remove);
+            self.ids_per_user.insert(caller, &ids_for_user);
+
+            self.positions.remove((user, id));
 
             Ok(())
         }
