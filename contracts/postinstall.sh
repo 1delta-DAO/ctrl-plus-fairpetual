@@ -5,12 +5,12 @@ set -eu
 # This is kind of a hack to prevent a nasty Next.js error when running the frontend
 # for the first time after deploying to a local node which forces to clear `frontend/.next`.
 
-if [[ ! -e deployments/greeter/development.ts ]]; then
+if [[ ! -e deployments/manager/development.ts ]]; then
     echo "Creating empty 'development.ts'…"
     if command -v touch &> /dev/null; then
-        touch deployments/greeter/development.ts
+        touch deployments/manager/development.ts
     else
-        copy /b deployments/greeter/development.ts +,,
+        copy /b deployments/manager/development.ts +,,
     fi
 else
     echo "Great, 'development.ts' already exists! Skipping…"
