@@ -11,7 +11,8 @@ import ChartInfo from './components/chart-info'
 import PositionManagement from './components/position-management'
 import PositionsTable from './components/positions-table'
 import TradingViewChart from './components/tradingview-chart'
-import { useFetchMarkets } from './hooks/useMarkets'
+import { useMarkets } from './hooks/useMarkets'
+import { usePositions } from './hooks/usePositions'
 
 export default function Home() {
   // Display `useInkathon` error messages (optional)
@@ -26,7 +27,8 @@ export default function Home() {
     change24: 0.12,
   }
 
-  const { markets } = useFetchMarkets()
+  const { markets } = useMarkets()
+  const { positions } = usePositions({ markets })
 
   return (
     <>
@@ -35,7 +37,7 @@ export default function Home() {
         <div className="flex w-full flex-col items-center gap-4 rounded bg-violet-950 p-4">
           <ChartInfo ChartInfo={chartInfo} />
           <TradingViewChart />
-          <PositionsTable />
+          <PositionsTable markets={markets} positions={positions} />
         </div>
         <div className="w-[40rem]">
           <PositionManagement markets={markets} />
