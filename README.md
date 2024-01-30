@@ -1,4 +1,79 @@
-![inkathon Devtooling Banner](inkathon-devtooling-banner.png)
+# FairPetuals
+FairPetual is the first perpetuals platform that allows for fair liquidations where anyone can earn a share of fee income by spotting positions that can be liquidated early and execute the liquidations themselves.
+
+This architecture is inspired by liquidation mechanics from lending protocols like Aave and allows running a perp platform without a centralized liquidation mechanic like GMX. 
+
+Generally, the platform allows users to open leveraged perpetual long- and short positions in AZERO/USD, WBTC/USD, DOT/USDT and more.
+
+The protocol itself is build around Market Pool (smart contacts) that can be deployed by the Market Manager smart contract. Each Market Pool allows longing and shorting a pair (e.g. AZERO/USD) and accepts pre-defined user collaterals. The multi-pool architecture prevents spillover effects compared to a single-pool architecture since the market exposures from the trading pairs are separated from each other.
+
+A user has 3 main ways to interact with the FairPetuals protocol
+
+1) Trade: Open or close positions in a pool
+
+2) Earn: Provide liquidity to a Market pool and earn shares of the liquidation penalty (envisioned: shares of trading fees, interest fees)
+
+3) Liquidate positions: Positions of users can be directly fetched from the chain and filtered for the positions that can be liquidated only. The quickest user ill earn a share of the liquidation penalty
+
+The protocols earns its income from a share of the liquidation penalty (envisioned: share of trading fees and interest fees)
+
+## Contracts
+
+### Market  
+- Deposit collateral to earn from liquidations and losing trades.
+- Open leveraged long / short positions.
+- Check and liquidate positions.
+
+### Vault  
+- Stores the user collaterals at position opening.
+- Interacts only with the Market contracts.
+
+### Manager
+- Deploys the Vault contract at initialization.
+- Allows the deployment of customizable Market contracts. 
+
+### Smart Contract Architecture
+
+![Smart Contract Architecture](contract_overview.png)
+
+# Setup
+This project uses the setup scripts from ink!athon Boilerplate. For details see below.
+```bash
+# Install dependencies (once)
+# NOTE: This automatically creates an `.env.local` file
+pnpm install
+
+# Start Next.js frontend
+pnpm run dev
+
+# For the next steps move to the contracts folder
+cd contracts
+
+# Run local substrate node
+pnpm run node
+
+# Build contracts
+pnpm run build
+
+# Deploy contracts (deploy to local node)
+pnpm run deploy
+
+# Deploy contracts to testnet (here we use the DIA oracle)
+CHAIN=alephzero-testnet pnpm run deploy
+
+# Run tests
+pnpm run test
+```
+
+## Demo
+
+Contract addresses on testnet:
+- Manager:
+- Market:
+- Vault:
+- wAZERO (our own wrapped AZERO deployment):
+
+Demo: [FairPetuals]()
 
 # ink!athon Boilerplate
 
