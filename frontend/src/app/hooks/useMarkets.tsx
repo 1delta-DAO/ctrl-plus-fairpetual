@@ -8,6 +8,7 @@ import { ContractPromise } from '@polkadot/api-contract'
 import { contractQuery, decodeOutput, useInkathon } from '@scio-labs/use-inkathon'
 import toast from 'react-hot-toast'
 
+import { formatWithDecimals } from '@/utils/formatters'
 import { Market } from '@/utils/types'
 
 export const useMarkets = () => {
@@ -97,7 +98,7 @@ export const useMarkets = () => {
         } = decodeOutput(result, marketContract, 'psp22::balance_of')
         if (isError) throw new Error(decodedOutput)
 
-        const balance = parseInt(balanceToFormat.replace(/,/g, '')) / 10 ** (market?.decimals || 0)
+        const balance = formatWithDecimals(balanceToFormat, market?.decimals || 0)
 
         balances[address] = balance
       }

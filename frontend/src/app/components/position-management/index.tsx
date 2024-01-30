@@ -15,10 +15,17 @@ import InputBox from './input-box'
 
 interface PositionManagementProps {
   markets: Market[] | undefined
+  depositBalances: { [key: string]: number } | undefined
   fetchPositions: () => Promise<void>
+  fetchDepositBalances: () => Promise<void>
 }
 
-const PositionManagement: FC<PositionManagementProps> = ({ markets, fetchPositions }) => {
+const PositionManagement: FC<PositionManagementProps> = ({
+  markets,
+  depositBalances,
+  fetchPositions,
+  fetchDepositBalances,
+}) => {
   const [long, setLong] = useState(true)
   const [leverage, setLeverage] = useState<number>(2)
 
@@ -30,11 +37,13 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets, fetchPositio
   const [assetOutAmount, setAssetOutAmount] = useState<string>('')
   const [walletBalanceAssetIn, setWalletBalanceAssetIn] = useState<string>('')
   const [walletBalanceAssetOut, setWalletBalanceAssetOut] = useState<string>('')
+  const [poolIsEmpty, setPoolIsEmpty] = useState<boolean>(false)
 
   useEffect(() => {
     if (!markets?.length) return
     setAssetIn(AZERO)
     setAssetOut(markets[1] ?? markets[0])
+    fetchDepositBalances()
   }, [markets])
 
   const { openPositionWithNative } = useManagePosition({ marketAddress: assetOut?.address ?? '' })
@@ -81,6 +90,13 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets, fetchPositio
     const amount = parseFloat(assetInAmount) * leverage
     setAssetOutAmount(amount.toString())
   }, [assetInAmount, leverage])
+
+  const tradeIsEnabled = assetInAmount && !poolIsEmpty
+
+  useEffect(() => {
+    if (!depositBalances) return
+    setPoolIsEmpty(depositBalances[assetOut?.address ?? ''] === 0)
+  }, [depositBalances])
 
   return (
     <div className="flex w-full flex-col gap-4 rounded bg-violet-950 p-4">
@@ -149,8 +165,14 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets, fetchPositio
         </div>
       </div> */}
 
-      <Button className="rounded-[0.35em]" onClick={handleLongOrShort} disabled={!assetInAmount}>
-        <span className="text-[1.1em] font-bold">{LongOrShortLabel}</span>
+      <Button className="rounded-[0.35em]" onClick={handleLongOrShort} disabled={!tradeIsEnabled}>
+        <span className="text-[1.1em] font-bold">
+          {tradeIsEnabled
+            ? LongOrShortLabel
+            : poolIsEmpty
+              ? `${assetOut?.symbol || 'The'} pool is empty`
+              : 'Enter an amount'}
+        </span>
       </Button>
     </div>
   )
