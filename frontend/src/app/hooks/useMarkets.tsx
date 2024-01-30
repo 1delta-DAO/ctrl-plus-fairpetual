@@ -14,6 +14,7 @@ export const useMarkets = () => {
   const { api, activeAccount } = useInkathon()
   const [marketsAreLoading, setMarketsAreLoading] = useState<boolean>(false)
   const [depositBalancesAreLoading, setDepositBalancesAreLoading] = useState<boolean>(false)
+  const [marketsPriceAreLoading, setMarketsPriceAreLoading] = useState<boolean>(false)
   const [markets, setMarkets] = useState<Market[]>()
   const [depositBalances, setDepositBalances] = useState<{ [key: string]: number }>()
 
@@ -80,25 +81,33 @@ export const useMarkets = () => {
 
     const balances: { [key: string]: number } = {}
 
-    for (const market of markets) {
-      const address = market?.address ?? ''
-      const marketContract = new ContractPromise(api, marketAbi, address)
-      const result = await contractQuery(api, address, marketContract, 'psp22::balance_of', {}, [
-        activeAccount?.address ?? '',
-      ])
-      const {
-        output: balanceToFormat,
-        isError: isError,
-        decodedOutput: decodedOutput,
-      } = decodeOutput(result, marketContract, 'psp22::balance_of')
-      if (isError) throw new Error(decodedOutput)
+    setDepositBalancesAreLoading(true)
 
-      const balance = parseInt(balanceToFormat.replace(/,/g, '')) / 10 ** (market?.decimals || 0)
+    try {
+      for (const market of markets) {
+        const address = market?.address ?? ''
+        const marketContract = new ContractPromise(api, marketAbi, address)
+        const result = await contractQuery(api, address, marketContract, 'psp22::balance_of', {}, [
+          activeAccount?.address ?? '',
+        ])
+        const {
+          output: balanceToFormat,
+          isError: isError,
+          decodedOutput: decodedOutput,
+        } = decodeOutput(result, marketContract, 'psp22::balance_of')
+        if (isError) throw new Error(decodedOutput)
 
-      balances[address] = balance
+        const balance = parseInt(balanceToFormat.replace(/,/g, '')) / 10 ** (market?.decimals || 0)
+
+        balances[address] = balance
+      }
+      setDepositBalances(balances)
+    } catch (e) {
+      console.error(e)
+      toast.error('Error while fetching deposit balances. Try again…')
+    } finally {
+      setDepositBalancesAreLoading(false)
     }
-
-    setDepositBalances(balances)
   }
 
   const fetchMarketsPrice = async () => {
@@ -106,25 +115,33 @@ export const useMarkets = () => {
 
     const updatedMarkets = []
 
-    for (const market of markets) {
-      const address = market.address
-      const marketContract = new ContractPromise(api, marketAbi, address)
-      const result = await contractQuery(api, address, marketContract, 'view_market_price')
-      const {
-        output: marketPrice,
-        isError: isError,
-        decodedOutput: decodedOutput,
-      } = decodeOutput(result, marketContract, 'view_market_price')
-      if (isError) throw new Error(decodedOutput)
-      console.log(marketPrice)
-      const updatedMarket = {
-        ...market,
-        price: marketPrice,
-      }
-      updatedMarkets.push(updatedMarket)
-    }
+    setMarketsPriceAreLoading(true)
 
-    setMarkets(updatedMarkets)
+    try {
+      for (const market of markets) {
+        const address = market.address
+        const marketContract = new ContractPromise(api, marketAbi, address)
+        const result = await contractQuery(api, address, marketContract, 'view_market_price')
+        const {
+          output: marketPrice,
+          isError: isError,
+          decodedOutput: decodedOutput,
+        } = decodeOutput(result, marketContract, 'view_market_price')
+        if (isError) throw new Error(decodedOutput)
+        console.log(marketPrice)
+        const updatedMarket = {
+          ...market,
+          price: marketPrice,
+        }
+        updatedMarkets.push(updatedMarket)
+      }
+      setMarkets(updatedMarkets)
+    } catch (e) {
+      console.error(e)
+      toast.error('Error while fetching markets price. Try again…')
+    } finally {
+      setMarketsPriceAreLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -141,6 +158,7 @@ export const useMarkets = () => {
     marketsAreLoading,
     depositBalances,
     depositBalancesAreLoading,
+    marketsPriceAreLoading,
     fetchDepositBalances,
   }
 }

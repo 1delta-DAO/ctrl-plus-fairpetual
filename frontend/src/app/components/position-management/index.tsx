@@ -43,9 +43,9 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets, fetchPositio
   const longOrShort = long ? (assetIn === AZERO ? openPositionWithNative : null) : null
 
   const handleLongOrShort = async () => {
-    if (longOrShort) {
+    if (longOrShort && assetIn) {
       await longOrShort({
-        amount: parseFloat(assetInAmount),
+        amount: parseFloat(assetInAmount) * 10 ** assetIn?.decimals,
         leverage: leverage,
       })
       await fetchPositions()
