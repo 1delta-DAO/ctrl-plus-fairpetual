@@ -19,6 +19,7 @@ interface InputBoxProps {
   selectedAssetSymbol: string
   inputAmount: string
   walletBalance: string
+  enableInput?: boolean
   setInputAmount: (value: string) => void
   onSetAsset: (market: Market) => void
 }
@@ -29,6 +30,7 @@ const InputBox: FC<InputBoxProps> = ({
   selectedAssetSymbol,
   inputAmount,
   walletBalance,
+  enableInput = true,
   setInputAmount,
   onSetAsset,
 }) => {
@@ -45,6 +47,14 @@ const InputBox: FC<InputBoxProps> = ({
           type="number"
           value={inputAmount}
           onChange={(e) => setInputAmount(e.target.value)}
+          disabled={!enableInput}
+          style={
+            !enableInput
+              ? {
+                  cursor: 'not-allowed',
+                }
+              : {}
+          }
         />
         <div className="flex min-h-[40px] w-1/2 items-center justify-end gap-2">
           <span className="text-2xl">{selectedAssetSymbol}</span>

@@ -71,6 +71,15 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
     fetchWalletBalance()
   }, [assetOut, getWalletBalanceAssetOut])
 
+  useEffect(() => {
+    if (!assetInAmount) {
+      setAssetOutAmount('')
+      return
+    }
+    const amount = parseFloat(assetInAmount) * leverage
+    setAssetOutAmount(amount.toString())
+  }, [assetInAmount, leverage])
+
   return (
     <div className="flex w-full flex-col gap-4 rounded bg-violet-950 p-4">
       <Switcher>
@@ -103,38 +112,42 @@ const PositionManagement: FC<PositionManagementProps> = ({ markets }) => {
           walletBalance={walletBalanceAssetOut}
           setInputAmount={setAssetOutAmount}
           onSetAsset={setAssetOut}
+          enableInput={false}
         />
       </div>
 
       <LeverageSlider leverage={leverage} setLeverage={setLeverage} />
 
-      <Separator />
+      {assetInAmount && (
+        <>
+          <Separator />
+          <div>
+            <div>
+              <span className="text-[0.95em]">Leverage</span>
+              <span className="float-right text-[0.95em]">{leverage}x</span>
+            </div>
+            <div>
+              <span className="text-[0.95em]">Entry Price</span>
+              <span className="float-right text-[0.95em]">-</span>
+            </div>
+            <div>
+              <span className="text-[0.95em]">Liq. Price</span>
+              <span className="float-right text-[0.95em]">-</span>
+            </div>
+          </div>
+        </>
+      )}
 
-      <div>
-        <div>
-          <span className="text-[0.95em]">Leverage</span>
-          <span className="float-right text-[0.95em]">{leverage}x</span>
-        </div>
-        <div>
-          <span className="text-[0.95em]">Entry Price</span>
-          <span className="float-right text-[0.95em]">-</span>
-        </div>
-        <div>
-          <span className="text-[0.95em]">Liq. Price</span>
-          <span className="float-right text-[0.95em]">-</span>
-        </div>
-      </div>
+      {/* <Separator /> */}
 
-      <Separator />
-
-      <div>
+      {/* <div>
         <div>
           <span className="text-[0.95em]">Fees and Price Impact</span>
           <span className="float-right text-[0.95em]">-</span>
         </div>
-      </div>
+      </div> */}
 
-      <Button className="rounded-[0.35em]" onClick={handleLongOrShort}>
+      <Button className="rounded-[0.35em]" onClick={handleLongOrShort} disabled={!assetInAmount}>
         <span className="text-[1.1em] font-bold">{LongOrShortLabel}</span>
       </Button>
     </div>
