@@ -64,14 +64,11 @@ mod manager {
         } 
 
         #[ink(message)]
-        pub fn increment_id(&mut self) -> u128 {
-            let id = self.incremented_id.clone();
-            self.incremented_id = self.incremented_id.saturating_add(1);
-            id
-        }
-
-        #[ink(message)]
         pub fn add_collateral_asset(&mut self, asset: AccountId) -> Result<(), ManagerError> {
+            if self.env().caller() != self.owner {
+                return Err(ManagerError::NotOwner);
+            }
+
             let mut vault: contract_ref!(CollateralVault) = self.vault.into();
             vault.add_asset(asset)
                 .map_err(|err| ManagerError::VaultError(err))       
