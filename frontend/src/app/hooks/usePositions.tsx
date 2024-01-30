@@ -40,6 +40,7 @@ export const usePositions = ({ markets }: usePositionsProps) => {
           collateralAmount: position.collateralAmount,
           collateralAsset: position.collateralAsset,
           collateralUsd: position.collateralUsd,
+          liquidationPrice: position.liquidationPrice,
           entryPrice: position.entryPrice,
           leverage: position.leverage,
           isLong: position.isLong,

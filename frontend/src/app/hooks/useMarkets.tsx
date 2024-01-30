@@ -3,32 +3,41 @@
 import { useEffect, useState } from 'react'
 
 import marketAbi from '@/abis/market.json'
-import { ContractIds } from '@/deployments/deployments'
+import { ContractIds, getDeployments } from '@/deployments/deployments'
 import { ContractPromise } from '@polkadot/api-contract'
-import {
-  contractQuery,
-  decodeOutput,
-  useInkathon,
-  useRegisteredContract,
-} from '@scio-labs/use-inkathon'
+import { contractQuery, decodeOutput, useInkathon } from '@scio-labs/use-inkathon'
 import toast from 'react-hot-toast'
 
 import { Market } from '@/utils/types'
 
 export const useMarkets = () => {
   const { api, activeAccount } = useInkathon()
-  const { contract: managerContract } = useRegisteredContract(ContractIds.Manager)
   const [marketsAreLoading, setMarketsAreLoading] = useState<boolean>(false)
   const [depositBalancesAreLoading, setDepositBalancesAreLoading] = useState<boolean>(false)
   const [markets, setMarkets] = useState<Market[]>()
   const [depositBalances, setDepositBalances] = useState<{ [key: string]: number }>()
 
   const fetchMarkets = async () => {
-    if (!managerContract || !api) return
+    if (!api) return
+
+    const deployments = await getDeployments()
+    const managerContractDeployment = deployments.find(
+      (deployment) => deployment.contractId === ContractIds.Manager,
+    )
+
+    if (!managerContractDeployment) {
+      toast.error('Manager contract not deployed. Try again…')
+      return
+    }
 
     setMarketsAreLoading(true)
 
     try {
+      const managerContract = new ContractPromise(
+        api,
+        managerContractDeployment.abi,
+        managerContractDeployment.address,
+      )
       const result = await contractQuery(api, '', managerContract, 'view_markets')
       const {
         output: marketsAddresses,
@@ -92,13 +101,40 @@ export const useMarkets = () => {
     setDepositBalances(balances)
   }
 
-  useEffect(() => {
-    fetchMarkets()
-  }, [managerContract])
+  const fetchMarketsPrice = async () => {
+    if (!markets || !api) return
+
+    const updatedMarkets = []
+
+    for (const market of markets) {
+      const address = market.address
+      const marketContract = new ContractPromise(api, marketAbi, address)
+      const result = await contractQuery(api, address, marketContract, 'view_market_price')
+      const {
+        output: marketPrice,
+        isError: isError,
+        decodedOutput: decodedOutput,
+      } = decodeOutput(result, marketContract, 'view_market_price')
+      if (isError) throw new Error(decodedOutput)
+      console.log(marketPrice)
+      const updatedMarket = {
+        ...market,
+        price: marketPrice,
+      }
+      updatedMarkets.push(updatedMarket)
+    }
+
+    setMarkets(updatedMarkets)
+  }
 
   useEffect(() => {
-    fetchDepositBalances()
-  }, [markets])
+    const fetchMarketData = async () => {
+      await fetchMarkets()
+      await fetchDepositBalances()
+      await fetchMarketsPrice()
+    }
+    fetchMarketData()
+  }, [api])
 
   return {
     markets,
