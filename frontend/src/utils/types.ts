@@ -11,6 +11,7 @@ export interface Asset {
 
 export interface Market extends Asset {
   address: string
+  price?: number
 }
 
 export interface Position {
@@ -24,12 +25,13 @@ export interface Position {
 
 export interface MarketPosition {
   user: string
-  id: number
-  collateralAmount: number
+  id: string
+  collateralAmount: string
   collateralAsset: string
-  collateralUsd: number
-  entryPrice: number
-  leverage: number
+  collateralUsd: string
+  liquidationPrice: string
+  entryPrice: string
+  leverage: string
   isLong: boolean
-  blockOpen: number
+  blockOpen: string
 }
