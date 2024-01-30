@@ -166,6 +166,19 @@ pub mod market {
             abbreviated_price
         }
 
+        #[ink(message)]
+        pub fn view_liquidation_price(
+            &self,
+            asset: AccountId,
+            leverage: u8,
+            is_long: bool,
+        ) -> Result<u128, MarketError> {
+            let metadata: contract_ref!(PSP22Metadata) = asset.into();
+            let symbol = metadata.token_symbol().ok_or(MarketError::OracleFailed)?;
+            let entry_price = self.get_price(symbol)?;
+            self.calculate_liquidation_price(entry_price, leverage, is_long)
+        }
+
         fn get_symbol_and_decimals(&self, token: AccountId) -> Result<(String, u8), MarketError> {
             let metadata: contract_ref!(PSP22Metadata) = token.into();
 
@@ -312,6 +325,8 @@ pub mod market {
             let (symbol, _decimals) = self.get_symbol_and_decimals(self.underlying_asset)?;
             let entry_price = self.get_price(symbol)?;
 
+            let liquidation_price = self.calculate_liquidation_price(entry_price, leverage, is_long)?;
+
             let id = self.new_id.get(caller).unwrap_or_default();
             self.positions.insert(
                 (caller, id),
@@ -325,6 +340,7 @@ pub mod market {
                     leverage,
                     is_long,
                     self.env().block_number(),
+                    liquidation_price,
                 ),
             );
 
@@ -344,6 +360,28 @@ pub mod market {
             self.new_id.insert(caller, &id.saturating_add(1));
 
             Ok(())
+        }
+
+        fn calculate_liquidation_price(
+            &self,
+            entry_price: u128,
+            leverage: u8,
+            is_long: bool, 
+        ) -> Result<u128, MarketError> {
+            let sign: i128 = if is_long { 1 } else { -1 };
+            let result: i128 = (entry_price as i128)
+                .checked_mul(self.liquidation_threshold as i128)
+                .ok_or(MarketError::Overflow)?
+                .checked_div(leverage as i128)
+                .ok_or(MarketError::Overflow)?
+                .checked_div(100i128)
+                .ok_or(MarketError::Overflow)?
+                .checked_mul(sign)
+                .ok_or(MarketError::Overflow)?
+                .checked_add(entry_price as i128)
+                .ok_or(MarketError::Overflow)?;
+
+            Ok(result as u128)
         }
 
         #[ink(message, payable)]

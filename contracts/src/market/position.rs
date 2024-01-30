@@ -17,6 +17,7 @@ pub struct Position {
     pub leverage: u8,
     pub is_long: bool,
     pub block_open: u32,
+    pub liquidation_price: u128,
 }
 
 impl Position {
@@ -30,6 +31,7 @@ impl Position {
         leverage: u8,
         is_long: bool,
         block_open: u32,
+        liquidation_price: u128,
     ) -> Position {
         Position {
             user,
@@ -41,6 +43,7 @@ impl Position {
             leverage,
             is_long,
             block_open,
+            liquidation_price,
         }
     }
 }
