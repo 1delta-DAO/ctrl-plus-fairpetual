@@ -424,10 +424,6 @@ pub mod market {
         pub fn deposit_native(&mut self) -> Result<(), MarketError> {
             let caller = self.env().caller();
 
-            if self.underlying_asset != self.wazero {
-                return Err(MarketError::NotSupported);
-            }
-
             let transferred_amount = self.env().transferred_value();
             self.wrap_native(transferred_amount)?;
 
@@ -454,10 +450,6 @@ pub mod market {
         #[ink(message)]
         pub fn withdraw_native(&mut self, deposit_token_amount: u128) -> Result<(), MarketError> {
             let caller = self.env().caller();
-
-            if self.underlying_asset != self.wazero {
-                return Err(MarketError::NotSupported);
-            }
 
             let token_amount = self.burn_and_calculate_amount(caller, deposit_token_amount)?;
 
