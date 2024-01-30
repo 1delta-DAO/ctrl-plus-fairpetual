@@ -65,7 +65,7 @@ const InputBox: FC<InputBoxProps> = ({
             className="rounded-full"
             alt="Asset Icon"
           />
-          {markets?.length && markets.length > 1 && (
+          {markets?.length && markets.length > 1 ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="bg-transparent p-0 hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0">
@@ -97,7 +97,7 @@ const InputBox: FC<InputBoxProps> = ({
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

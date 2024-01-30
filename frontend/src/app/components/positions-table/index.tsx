@@ -83,7 +83,13 @@ interface PositionsTableProps {
 }
 
 const PositionsTable: FC<PositionsTableProps> = ({ markets, positions }) => {
-  const positionsLength = Object.keys(positions).length
+  let noPositions = true
+  for (const key in positions) {
+    if (positions[key].length > 0) {
+      noPositions = false
+      break
+    }
+  }
 
   return (
     <>
@@ -102,7 +108,7 @@ const PositionsTable: FC<PositionsTableProps> = ({ markets, positions }) => {
             </tr>
           </thead>
           <tbody>
-            {positionsLength > 0 ? (
+            {!noPositions ? (
               Positions.map((position, index) => {
                 return <Row key={index} position={position} />
               })

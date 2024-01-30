@@ -87,6 +87,10 @@ export default function Earn() {
     await fetchDepositBalances()
   }
 
+  useEffect(() => {
+    setAmount('')
+  }, [isDeposit])
+
   return (
     <>
       <Navbar />
