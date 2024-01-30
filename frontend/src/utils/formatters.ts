@@ -10,3 +10,7 @@ export const formatPercentage = (percentage: number) => {
 export const formatDollarAmount = (amount: number) => {
   return `$${formatNumber(amount)}`
 }
+
+export const formatWithDecimals = (amount: string, decimals: number) => {
+  return parseInt(amount.replace(/,/g, '')) / 10 ** decimals
+}
