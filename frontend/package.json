@@ -1,5 +1,5 @@
 {
-  "name": "@inkathon/frontend",
+  "name": "@fairpetuals/frontend",
   "private": true,
   "version": "0.4.2",
   "scripts": {
@@ -23,7 +23,7 @@
     "@emotion/css": "^11.11.2",
     "@emotion/react": "^11.11.3",
     "@hookform/resolvers": "^3.3.4",
-    "@inkathon/contracts": "workspace:*",
+    "@fairpetuals/contracts": "workspace:*",
     "@polkadot/api": "^10.11.2",
     "@polkadot/api-contract": "^10.11.2",
     "@polkadot/extension-dapp": "^0.46.6",
