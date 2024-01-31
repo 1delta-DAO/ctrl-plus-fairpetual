@@ -17,6 +17,9 @@ export const Navbar: FC = () => (
       <div className="flex items-center gap-6">
         <Link href="/">Trade</Link>
         <Link href="/earn">Earn</Link>
+        <Link href="https://faucet.test.azero.dev/" target="_blank">
+          Faucet
+        </Link>
       </div>
     </div>
     <ConnectButton />
