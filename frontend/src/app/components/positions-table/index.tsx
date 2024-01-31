@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 
 import { useManagePosition } from '@/app/hooks/useManagePosition'
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,7 @@ import { SymbolsToIcons } from '@/utils/constants'
 import {
   formatDollarAmount,
   formatDollarAmountWithSign,
+  formatNumber,
   formatPercentage,
   formatWithDecimals,
 } from '@/utils/formatters'
@@ -80,14 +81,14 @@ const Row = ({ position, market, fetchPositions }: RowProps) => {
       <td>
         <div className="flex flex-col">
           <span>{formatDollarAmount(sizeUsd)}</span>
-          <span className="text-gray-400">({size} AZERO)</span>
+          <span className="text-gray-400">({formatNumber(size)} AZERO)</span>
         </div>
       </td>
 
       <td>
         <div className="flex flex-col">
           <span>{formatDollarAmount(collateralUsd)}</span>
-          <span className="text-gray-400">({collateralAmount} AZERO)</span>
+          <span className="text-gray-400">({formatNumber(collateralAmount)} AZERO)</span>
         </div>
       </td>
 
@@ -126,6 +127,13 @@ const PositionsTable: FC<PositionsTableProps> = ({ markets, positions, fetchPosi
       break
     }
   }
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      await fetchPositions()
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <>

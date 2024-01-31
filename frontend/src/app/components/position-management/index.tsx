@@ -9,7 +9,7 @@ import LeverageSlider from '@/components/ui/leverageSlider'
 import Separator from '@/components/ui/separator'
 import { Switcher, SwitcherButton } from '@/components/ui/switcher'
 import { AZERO } from '@/utils/constants'
-import { formatWithDecimals } from '@/utils/formatters'
+import { formatDollarAmount, formatWithDecimals } from '@/utils/formatters'
 import { Market } from '@/utils/types'
 
 import InputBox from './input-box'
@@ -70,6 +70,8 @@ const PositionManagement: FC<PositionManagementProps> = ({
         isLong,
       })
       await fetchPositions()
+      setAssetInAmount('')
+      setLeverage(1)
     }
   }
 
@@ -114,9 +116,9 @@ const PositionManagement: FC<PositionManagementProps> = ({
 
       setLiqPrice(liqPrice.toFixed(5))
       const collateralUsd = parseFloat(assetInAmount) * entryPrice
-      setCollateralUsd(collateralUsd.toFixed(5))
+      setCollateralUsd(formatDollarAmount(collateralUsd))
       const sizeUsd = parseFloat(assetOutAmount) * entryPrice
-      setSizeUsd(sizeUsd.toFixed(5))
+      setSizeUsd(formatDollarAmount(sizeUsd))
     }
     setAmountOutAndFetchPrices()
   }, [assetInAmount, leverage, entryPrices, isLong])

@@ -1,8 +1,6 @@
 import Image from 'next/image'
 import { FC } from 'react'
 
-import { formatDollarAmount, formatPercentage } from '@/utils/formatters'
-
 interface ChartInfoProps {
   ChartInfo: {
     price: number
@@ -25,14 +23,14 @@ const ChartInfo: FC<ChartInfoProps> = ({ ChartInfo }) => {
         />
         <span>AZERO / USD</span>
       </div>
-      <div className="flex flex-col gap-1">
+      {/* <div className="flex flex-col gap-1">
         <div className="text-sm leading-none text-gray-400">Price</div>
         <div className="leading-none">{formatDollarAmount(price)}</div>
       </div>
       <div className="flex flex-col gap-1">
         <div className="text-sm leading-none text-gray-400">24h Change</div>
         <div className="leading-none">{formatPercentage(change24)}</div>
-      </div>
+      </div> */}
     </div>
   )
 }

@@ -89,7 +89,9 @@ export default function Earn() {
   }, [isDeposit])
 
   const depositedBalance = depositBalances
-    ? depositBalances[WAZERO?.address || ''].toFixed(2) || 0
+    ? depositBalances[WAZERO?.address || '']
+      ? depositBalances[WAZERO?.address || ''].toFixed(2)
+      : 0
     : 0
 
   return (
