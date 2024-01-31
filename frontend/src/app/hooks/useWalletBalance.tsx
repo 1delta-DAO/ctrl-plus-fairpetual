@@ -15,19 +15,6 @@ export const useWalletBalance = () => {
     return balance.balanceFormatted
   }
 
-  // const getPSP22Balance = async (asset: Market) => {
-  //   if (api && activeAccount && asset.symbol !== 'AZERO') {
-  //     const psp22balances = await getPSP22Balances(
-  //       api,
-  //       activeAccount.address,
-  //       activeChain?.network || '',
-  //     )
-  //     console.log(psp22balances)
-  //     const balanceData = psp22balances.find((balance) => balance.tokenSymbol === asset.symbol)
-  //     return balanceData?.balanceFormatted
-  //   }
-  // }
-
   const getPSP22Balance = async (asset: Market) => {
     if (api && activeAccount && asset.symbol !== 'AZERO') {
       const psp22Contract = new ContractPromise(api, psp22abi, asset.address)

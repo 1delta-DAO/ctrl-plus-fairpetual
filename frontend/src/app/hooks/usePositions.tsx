@@ -36,7 +36,6 @@ export const usePositions = ({ markets }: usePositionsProps) => {
       for (const positionData of marketPositionsData.Ok) {
         const position = positionData[0]
         const pnlPercentage = positionData[1]
-        console.log('pnlPercentage', pnlPercentage)
         const price = positionData[2]
         const marketPosition: MarketPosition = {
           user: position.user,
@@ -54,8 +53,6 @@ export const usePositions = ({ markets }: usePositionsProps) => {
         }
         positions.push(marketPosition)
       }
-
-      console.log(positions)
 
       setPositions((prevPositions) => ({
         ...prevPositions,

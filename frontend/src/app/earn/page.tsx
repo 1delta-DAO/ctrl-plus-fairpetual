@@ -46,7 +46,6 @@ export default function Earn() {
   })
 
   const [asset, setAsset] = useState<Market>(AZERO)
-  const assets = WAZERO ? [AZERO, WAZERO] : []
 
   const [isDeposit, setIsDeposit] = useState(true)
   const [amount, setAmount] = useState<string>('')
@@ -89,16 +88,9 @@ export default function Earn() {
     setAmount('')
   }, [isDeposit])
 
-  // useEffect(() => {
-
-  //   if (!depositBalances) {
-  //     fetchDepositBalances()
-  //   } else {
-  //     setDepositedBalance(depositBalances[WAZERO?.address || ''] || 0)
-  //   }
-  // }, [depositBalances])
-
-  const depositedBalance = depositBalances ? depositBalances[WAZERO?.address || ''] || 0 : 0
+  const depositedBalance = depositBalances
+    ? depositBalances[WAZERO?.address || ''].toFixed(2) || 0
+    : 0
 
   return (
     <>
@@ -107,14 +99,14 @@ export default function Earn() {
         <div className="mx-auto flex w-fit flex-col gap-8">
           <div>
             <Title>Earn - Fairpetuals Pool</Title>
-            <Subtitle>Deposit xAZERO to earn fees from the protocol.</Subtitle>
+            <Subtitle>Deposit AZERO to earn fees from the protocol.</Subtitle>
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex flex-row justify-between">
               <div className="flex gap-2">
                 <Subtitle>Your locked tokens:</Subtitle>
                 <Subtitle>
-                  <span className="font-bold text-violet-500">{depositedBalance} wAZERO</span>
+                  <span className="font-bold text-violet-500">{depositedBalance} xAZERO</span>
                 </Subtitle>
               </div>
               <div className="flex gap-2">
@@ -136,7 +128,7 @@ export default function Earn() {
               <InputBox
                 topLeftLabel={inputLabel}
                 selectedAssetSymbol={asset.symbol}
-                markets={assets}
+                markets={[]}
                 inputAmount={amount}
                 walletBalance={walletBalance}
                 setInputAmount={setAmount}

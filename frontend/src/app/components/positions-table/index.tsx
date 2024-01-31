@@ -30,7 +30,9 @@ const Row = ({ position, market, fetchPositions }: RowProps) => {
   const collateralUsd = formatWithDecimals(position.collateralUsd, 6)
   const positionNetValue = collateralUsd + collateralUsd * (parseInt(position.pnlPercentage) / 100)
   const pnlUsd = positionNetValue - collateralUsd
-  const size = collateralAmount * parseInt(position.leverage)
+  const leverage = parseInt(position.leverage)
+  const size = collateralAmount * leverage
+  const sizeUsd = collateralUsd * leverage
 
   const entryPrice = formatWithDecimals(position.entryPrice, 6)
   const marketPrice = formatWithDecimals(position.price, 6)
@@ -61,7 +63,7 @@ const Row = ({ position, market, fetchPositions }: RowProps) => {
             <span className={`font-bold ${longShortcolor}`}>
               {position.isLong ? 'Long' : 'Short'}
             </span>
-            <span>{position.leverage}x</span>
+            <span>{leverage}x</span>
           </div>
         </div>
       </td>
@@ -75,7 +77,12 @@ const Row = ({ position, market, fetchPositions }: RowProps) => {
         </div>
       </td>
 
-      <td>{formatDollarAmount(size)}</td>
+      <td>
+        <div className="flex flex-col">
+          <span>{formatDollarAmount(sizeUsd)}</span>
+          <span className="text-gray-400">({size} AZERO)</span>
+        </div>
+      </td>
 
       <td>
         <div className="flex flex-col">

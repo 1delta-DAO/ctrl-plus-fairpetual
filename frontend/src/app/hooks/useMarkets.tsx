@@ -16,8 +16,8 @@ export const useMarkets = () => {
   const [marketsAreLoading, setMarketsAreLoading] = useState<boolean>(false)
   const [depositBalancesAreLoading, setDepositBalancesAreLoading] = useState<boolean>(false)
   const [marketsPriceAreLoading, setMarketsPriceAreLoading] = useState<boolean>(false)
-  const [liquidationPriceAreLoading, setLiquidationPriceAreLoading] = useState<boolean>(false)
   const [markets, setMarkets] = useState<Market[]>()
+  const [entryPrices, setEntryPrices] = useState<{ [key: string]: string }>()
   const [depositBalances, setDepositBalances] = useState<{ [key: string]: number }>()
 
   const fetchMarkets = async () => {
@@ -116,6 +116,7 @@ export const useMarkets = () => {
     if (!markets || !api) return
 
     const updatedMarkets = []
+    const marketPrices: { [key: string]: string } = {}
 
     setMarketsPriceAreLoading(true)
 
@@ -130,14 +131,16 @@ export const useMarkets = () => {
           decodedOutput: decodedOutput,
         } = decodeOutput(result, marketContract, 'view_market_price')
         if (isError) throw new Error(decodedOutput)
-        console.log(marketPrice)
+        const price = marketPrice.Ok
         const updatedMarket = {
           ...market,
-          price: marketPrice,
+          price: price,
         }
         updatedMarkets.push(updatedMarket)
+        marketPrices[address] = price
       }
       setMarkets(updatedMarkets)
+      setEntryPrices(marketPrices)
     } catch (e) {
       console.error(e)
       toast.error('Error while fetching markets price. Try again…')
@@ -146,60 +149,42 @@ export const useMarkets = () => {
     }
   }
 
-  const fetchLiquidationPrice = async (
-    marketAddress: string,
-    leverage: number,
-    isLong: boolean,
-  ) => {
+  const getLiquidationPrice = async (marketAddress: string, leverage: number, isLong: boolean) => {
     if (!api) return
-
-    setLiquidationPriceAreLoading(true)
 
     try {
       const marketContract = new ContractPromise(api, marketAbi, marketAddress)
-      const result = await contractQuery(
-        api,
+      const result = await contractQuery(api, '', marketContract, 'view_liquidation_price', {}, [
         marketAddress,
-        marketContract,
-        'view_liquidation_price',
-        {},
-        [marketAddress, leverage, isLong],
-      )
+        leverage,
+        isLong,
+      ])
       const {
         output: liquidationPrice,
         isError: isError,
         decodedOutput: decodedOutput,
       } = decodeOutput(result, marketContract, 'view_liquidation_price')
       if (isError) throw new Error(decodedOutput)
-
-      console.log('liq price', liquidationPrice)
-
-      const updatedMarkets = markets?.map((market) => {
-        if (market.address === marketAddress) {
-          return {
-            ...market,
-            liquidationPrice,
-          }
-        }
-        return market
-      })
-      setMarkets(updatedMarkets)
+      return liquidationPrice
     } catch (e) {
       console.error(e)
       toast.error('Error while fetching liquidation price. Try again…')
-    } finally {
-      setLiquidationPriceAreLoading(false)
     }
+
+    return 0
   }
 
   useEffect(() => {
     const fetchMarketData = async () => {
       await fetchMarkets()
-      await fetchDepositBalances()
       await fetchMarketsPrice()
     }
     fetchMarketData()
   }, [api])
+
+  useEffect(() => {
+    fetchDepositBalances()
+  }, [markets])
 
   return {
     markets,
@@ -207,7 +192,9 @@ export const useMarkets = () => {
     depositBalances,
     depositBalancesAreLoading,
     marketsPriceAreLoading,
+    entryPrices,
+    fetchMarketsPrice,
     fetchDepositBalances,
-    fetchLiquidationPrice,
+    getLiquidationPrice,
   }
 }

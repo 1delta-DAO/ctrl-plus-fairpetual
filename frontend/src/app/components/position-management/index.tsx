@@ -9,6 +9,7 @@ import LeverageSlider from '@/components/ui/leverageSlider'
 import Separator from '@/components/ui/separator'
 import { Switcher, SwitcherButton } from '@/components/ui/switcher'
 import { AZERO } from '@/utils/constants'
+import { formatWithDecimals } from '@/utils/formatters'
 import { Market } from '@/utils/types'
 
 import InputBox from './input-box'
@@ -16,20 +17,26 @@ import InputBox from './input-box'
 interface PositionManagementProps {
   markets: Market[] | undefined
   depositBalances: { [key: string]: number } | undefined
+  entryPrices: { [key: string]: string } | undefined
   fetchPositions: () => Promise<void>
   fetchDepositBalances: () => Promise<void>
+  getLiquidationPrice: (marketAddress: string, leverage: number, isLong: boolean) => Promise<any>
+  fetchMarketsPrice: () => Promise<void>
 }
 
 const PositionManagement: FC<PositionManagementProps> = ({
   markets,
   depositBalances,
+  entryPrices,
   fetchPositions,
   fetchDepositBalances,
+  getLiquidationPrice,
+  fetchMarketsPrice,
 }) => {
-  const [long, setLong] = useState(true)
+  const [isLong, setIsLong] = useState(true)
   const [leverage, setLeverage] = useState<number>(1)
 
-  const LongOrShortLabel = long ? 'Long' : 'Short'
+  const LongOrShortLabel = isLong ? 'Long' : 'Short'
 
   const [assetIn, setAssetIn] = useState<Market | undefined>(undefined)
   const [assetOut, setAssetOut] = useState<Market | undefined>(undefined)
@@ -38,6 +45,10 @@ const PositionManagement: FC<PositionManagementProps> = ({
   const [walletBalanceAssetIn, setWalletBalanceAssetIn] = useState<string>('')
   const [walletBalanceAssetOut, setWalletBalanceAssetOut] = useState<string>('')
   const [poolIsEmpty, setPoolIsEmpty] = useState<boolean>(false)
+  const [entryPrice, setEntryPrice] = useState<string | number>('')
+  const [liqPrice, setLiqPrice] = useState<string | number>('')
+  const [collateralUsd, setCollateralUsd] = useState<string | number>('')
+  const [sizeUsd, setSizeUsd] = useState<string | number>('')
 
   useEffect(() => {
     if (!markets?.length) return
@@ -56,7 +67,7 @@ const PositionManagement: FC<PositionManagementProps> = ({
       await longOrShort({
         amount: parseFloat(assetInAmount) * 10 ** assetIn?.decimals,
         leverage: leverage,
-        isLong: long,
+        isLong,
       })
       await fetchPositions()
     }
@@ -84,13 +95,35 @@ const PositionManagement: FC<PositionManagementProps> = ({
   }, [assetOut, getWalletBalanceAssetOut])
 
   useEffect(() => {
-    if (!assetInAmount) {
-      setAssetOutAmount('')
-      return
+    const setAmountOutAndFetchPrices = async () => {
+      if (!assetInAmount || !assetOut || !leverage) {
+        setAssetOutAmount('')
+        return
+      }
+      const amount = parseFloat(assetInAmount) * leverage
+      setAssetOutAmount(amount.toString())
+      // const liqPrice = await getLiquidationPrice(assetOut.address, leverage, isLong)
+
+      // TODO: LIQUIDATION PRICE IS HARDCODED AS getLiquidationPrice IS NOT WORKING
+      const liqThreshold = 0.6 // -60% price change from entry price, so -60% if long, +60% if short
+      const entryPrice = formatWithDecimals(entryPrices?.[assetOut?.address ?? ''] || '', 6)
+      setEntryPrice(entryPrice.toFixed(5))
+      const liqPrice = isLong
+        ? entryPrice - entryPrice * (liqThreshold / leverage)
+        : entryPrice + entryPrice * (liqThreshold / leverage)
+
+      setLiqPrice(liqPrice.toFixed(5))
+      const collateralUsd = parseFloat(assetInAmount) * entryPrice
+      setCollateralUsd(collateralUsd.toFixed(5))
+      const sizeUsd = parseFloat(assetOutAmount) * entryPrice
+      setSizeUsd(sizeUsd.toFixed(5))
     }
-    const amount = parseFloat(assetInAmount) * leverage
-    setAssetOutAmount(amount.toString())
-  }, [assetInAmount, leverage])
+    setAmountOutAndFetchPrices()
+  }, [assetInAmount, leverage, entryPrices, isLong])
+
+  useEffect(() => {
+    assetInAmount && fetchMarketsPrice()
+  }, [assetInAmount])
 
   const tradeIsEnabled = assetInAmount && !poolIsEmpty
 
@@ -102,10 +135,10 @@ const PositionManagement: FC<PositionManagementProps> = ({
   return (
     <div className="flex w-full flex-col gap-4 rounded bg-violet-950 p-4">
       <Switcher>
-        <SwitcherButton active={long} onClick={() => setLong(true)}>
+        <SwitcherButton active={isLong} onClick={() => setIsLong(true)}>
           Long
         </SwitcherButton>
-        <SwitcherButton active={!long} onClick={() => setLong(false)}>
+        <SwitcherButton active={!isLong} onClick={() => setIsLong(false)}>
           Short
         </SwitcherButton>
       </Switcher>
@@ -125,6 +158,7 @@ const PositionManagement: FC<PositionManagementProps> = ({
         </div>
         <InputBox
           topLeftLabel={LongOrShortLabel}
+          topRightLabel={<></>}
           selectedAssetSymbol={assetOut?.symbol ?? ''}
           markets={markets}
           inputAmount={assetOutAmount}
@@ -135,7 +169,7 @@ const PositionManagement: FC<PositionManagementProps> = ({
         />
       </div>
 
-      <LeverageSlider leverage={leverage} setLeverage={setLeverage} />
+      {assetInAmount ? <LeverageSlider leverage={leverage} setLeverage={setLeverage} /> : <></>}
 
       {assetInAmount && (
         <>
@@ -147,24 +181,23 @@ const PositionManagement: FC<PositionManagementProps> = ({
             </div>
             <div>
               <span className="text-[0.95em]">Entry Price</span>
-              <span className="float-right text-[0.95em]">-</span>
+              <span className="float-right text-[0.95em]">{entryPrice}</span>
             </div>
             <div>
               <span className="text-[0.95em]">Liq. Price</span>
-              <span className="float-right text-[0.95em]">-</span>
+              <span className="float-right text-[0.95em]">{liqPrice}</span>
+            </div>
+            <div>
+              <span className="text-[0.95em]">You are paying</span>
+              <span className="float-right text-[0.95em]">{collateralUsd}</span>
+            </div>
+            <div>
+              <span className="text-[0.95em]">Size</span>
+              <span className="float-right text-[0.95em]">{sizeUsd}</span>
             </div>
           </div>
         </>
       )}
-
-      {/* <Separator /> */}
-
-      {/* <div>
-        <div>
-          <span className="text-[0.95em]">Fees and Price Impact</span>
-          <span className="float-right text-[0.95em]">-</span>
-        </div>
-      </div> */}
 
       <Button className="rounded-[0.35em]" onClick={handleLongOrShort} disabled={!tradeIsEnabled}>
         <span className="text-[1.1em] font-bold">

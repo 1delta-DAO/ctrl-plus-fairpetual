@@ -27,7 +27,14 @@ export default function Home() {
     change24: 0.12,
   }
 
-  const { markets, depositBalances, fetchDepositBalances } = useMarkets()
+  const {
+    markets,
+    depositBalances,
+    entryPrices,
+    fetchDepositBalances,
+    getLiquidationPrice,
+    fetchMarketsPrice,
+  } = useMarkets()
   const { positions, fetchPositions } = usePositions({ markets })
 
   return (
@@ -43,8 +50,11 @@ export default function Home() {
           <PositionManagement
             markets={markets}
             depositBalances={depositBalances}
+            entryPrices={entryPrices}
             fetchPositions={fetchPositions}
             fetchDepositBalances={fetchDepositBalances}
+            getLiquidationPrice={getLiquidationPrice}
+            fetchMarketsPrice={fetchMarketsPrice}
           />
         </div>
       </div>
