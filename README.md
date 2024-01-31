@@ -68,12 +68,12 @@ pnpm run test
 ## Demo
 
 Contract addresses on testnet:
-- Manager:
-- Market:
-- Vault:
-- wAZERO (our own wrapped AZERO deployment):
+- Manager:                                    5DnDzkGpSGmWfnWAjvCWJqqHg6g4nrxYmvinPzDAe6umr5jg
+- Market (AZERO/USD):                         5FJ6tvxARQnriY1UPHNmNUKzZGHXqMGYVsXJa3jvEUbjMBW8
+- Vault:                                      5Cb7x4Lh2mRHfWaujx1CS2xqtPdjUBMV6p7gzWm8HbiaySF1
+- wAZERO (our own wrapped AZERO deployment):  5EAz6SipuHb2gsaf9fxRhrkw3xcTfFdr6PSQu31C4mkfDWV1
 
-Demo: [FairPetuals]()
+Demo: [FairPetuals](https://ctrl-plus-fairpetual-frontend.vercel.app/)
 
 # ink!athon Boilerplate
 
