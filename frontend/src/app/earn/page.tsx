@@ -65,7 +65,7 @@ export default function Earn() {
       ? withdrawNative
       : withdraw
 
-  const formattedAmount = Number(amount) * 10 ** asset.decimals
+  const formattedAmount = parseInt(String(Number(amount) * 10 ** asset.decimals))
 
   const getWalletBalance = asset === AZERO ? getNativeBalance : getPSP22Balance
 
@@ -82,6 +82,7 @@ export default function Earn() {
     if (!amount) return
     await depositOrWithdraw({ amount: formattedAmount })
     await fetchDepositBalances()
+    setAmount('')
   }
 
   useEffect(() => {
@@ -89,10 +90,27 @@ export default function Earn() {
   }, [isDeposit])
 
   const depositedBalance = depositBalances
-    ? depositBalances[WAZERO?.address || '']
+    ? depositBalances[WAZERO?.address || ''] > 0.01
       ? depositBalances[WAZERO?.address || ''].toFixed(2)
       : 0
     : 0
+
+  const topRightLabel = !isDeposit ? (
+    <>
+      <div className="flex items-center gap-2">
+        <span>Locked Amount:</span>
+        <span className="font-bold">{depositedBalance} xAZERO</span>
+        {parseFloat(depositedBalance || '0') > 0.01 && (
+          <Button
+            className="leading-1 h-auto rounded-[0.35em] bg-violet-600 px-[0.25em] py-[0.15em]"
+            onClick={() => setAmount(String(depositBalances?.[WAZERO?.address || '']))}
+          >
+            <span className="text-[0.7em] font-bold leading-normal">MAX</span>
+          </Button>
+        )}
+      </div>
+    </>
+  ) : undefined
 
   return (
     <>
@@ -129,10 +147,12 @@ export default function Earn() {
               </Switcher>
               <InputBox
                 topLeftLabel={inputLabel}
+                topRightLabel={topRightLabel}
                 selectedAssetSymbol={asset.symbol}
                 markets={[]}
                 inputAmount={amount}
                 walletBalance={walletBalance}
+                customSymbol={!isDeposit ? 'xAZERO' : undefined}
                 setInputAmount={setAmount}
                 onSetAsset={setAsset}
               />

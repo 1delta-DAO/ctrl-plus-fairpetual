@@ -21,6 +21,7 @@ interface InputBoxProps {
   inputAmount: string
   walletBalance: string | number
   enableInput?: boolean
+  customSymbol?: string
   setInputAmount: (value: string) => void
   onSetAsset: (market: Market) => void
 }
@@ -33,6 +34,7 @@ const InputBox: FC<InputBoxProps> = ({
   inputAmount,
   walletBalance,
   enableInput = true,
+  customSymbol,
   setInputAmount,
   onSetAsset,
 }) => {
@@ -64,7 +66,7 @@ const InputBox: FC<InputBoxProps> = ({
           }
         />
         <div className="flex min-h-[40px] w-1/2 items-center justify-end gap-2">
-          <span className="text-2xl">{selectedAssetSymbol}</span>
+          <span className="text-2xl">{customSymbol ?? selectedAssetSymbol}</span>
           <Image
             src={SymbolsToIcons[selectedAssetSymbol ?? '']}
             width={23}
