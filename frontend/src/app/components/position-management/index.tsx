@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from 'react'
 
+import { useInkathon } from '@scio-labs/use-inkathon'
 import { FaDownLong } from 'react-icons/fa6'
 
 import { useManagePosition } from '@/app/hooks/useManagePosition'
@@ -33,6 +34,8 @@ const PositionManagement: FC<PositionManagementProps> = ({
   getLiquidationPrice,
   fetchMarketsPrice,
 }) => {
+  const { activeAccount } = useInkathon()
+
   const [isLong, setIsLong] = useState(true)
   const [leverage, setLeverage] = useState<number>(1)
 
@@ -43,7 +46,6 @@ const PositionManagement: FC<PositionManagementProps> = ({
   const [assetInAmount, setAssetInAmount] = useState<string>('')
   const [assetOutAmount, setAssetOutAmount] = useState<string>('')
   const [walletBalanceAssetIn, setWalletBalanceAssetIn] = useState<string>('')
-  const [walletBalanceAssetOut, setWalletBalanceAssetOut] = useState<string>('')
   const [poolIsEmpty, setPoolIsEmpty] = useState<boolean>(false)
   const [entryPrice, setEntryPrice] = useState<string | number>('')
   const [liqPrice, setLiqPrice] = useState<string | number>('')
@@ -76,7 +78,6 @@ const PositionManagement: FC<PositionManagementProps> = ({
   }
 
   const getWalletBalanceAssetIn = assetIn === AZERO ? getNativeBalance : getPSP22Balance
-  const getWalletBalanceAssetOut = assetOut === AZERO ? getNativeBalance : getPSP22Balance
 
   useEffect(() => {
     const fetchWalletBalance = async () => {
@@ -85,16 +86,7 @@ const PositionManagement: FC<PositionManagementProps> = ({
       setWalletBalanceAssetIn(balance || '0')
     }
     fetchWalletBalance()
-  }, [assetIn, getWalletBalanceAssetIn])
-
-  useEffect(() => {
-    const fetchWalletBalance = async () => {
-      if (!getWalletBalanceAssetOut || !assetOut) return
-      const balance = await getWalletBalanceAssetOut(assetOut)
-      setWalletBalanceAssetOut(balance || '0')
-    }
-    fetchWalletBalance()
-  }, [assetOut, getWalletBalanceAssetOut])
+  }, [assetIn, getWalletBalanceAssetIn, activeAccount])
 
   useEffect(() => {
     const setAmountOutAndFetchPrices = async () => {
@@ -134,6 +126,11 @@ const PositionManagement: FC<PositionManagementProps> = ({
     setPoolIsEmpty(depositBalances[assetOut?.address ?? ''] === 0)
   }, [depositBalances])
 
+  useEffect(() => {
+    if (!activeAccount) return
+    fetchPositions()
+  }, [activeAccount])
+
   return (
     <div className="flex w-full flex-col gap-4 rounded bg-violet-950 p-4">
       <Switcher>
@@ -164,7 +161,7 @@ const PositionManagement: FC<PositionManagementProps> = ({
           selectedAssetSymbol={assetOut?.symbol ?? ''}
           markets={markets}
           inputAmount={assetOutAmount}
-          walletBalance={walletBalanceAssetOut}
+          walletBalance={''}
           setInputAmount={setAssetOutAmount}
           onSetAsset={setAssetOut}
           enableInput={false}
