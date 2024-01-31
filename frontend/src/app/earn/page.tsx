@@ -26,7 +26,7 @@ const Subtitle: FC<{
 
 export default function Earn() {
   // Display `useInkathon` error messages (optional)
-  const { error } = useInkathon()
+  const { error, activeAccount } = useInkathon()
   useEffect(() => {
     if (!error) return
     toast.error(error.message)
@@ -111,6 +111,11 @@ export default function Earn() {
       </div>
     </>
   ) : undefined
+
+  useEffect(() => {
+    if (!activeAccount) return
+    fetchDepositBalances()
+  }, [activeAccount])
 
   return (
     <>
