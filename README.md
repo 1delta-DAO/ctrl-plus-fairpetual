@@ -43,7 +43,7 @@ This project uses the setup scripts from ink!athon Boilerplate. For details see 
 # NOTE: This automatically creates an `.env.local` file
 pnpm install
 
-# Start Next.js frontend
+# Start Next.js frontend which connects with the already deployed testnet contracts
 pnpm run dev
 
 # For the next steps move to the contracts folder
@@ -55,10 +55,10 @@ pnpm run node
 # Build contracts
 pnpm run build
 
-# Deploy contracts (deploy to local node)
+# Deploy contracts (deploy to local node, here we use a fake oracle contract)
 pnpm run deploy
 
-# Deploy contracts to testnet (here we use the DIA oracle)
+# Deploy contracts to testnet (here we use the oracle provided by DIA)
 CHAIN=alephzero-testnet pnpm run deploy
 
 # Run tests
