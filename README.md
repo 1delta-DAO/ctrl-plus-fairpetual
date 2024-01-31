@@ -43,7 +43,7 @@ This project uses the setup scripts from ink!athon Boilerplate. For details see 
 # NOTE: This automatically creates an `.env.local` file
 pnpm install
 
-# Start Next.js frontend
+# Start Next.js frontend which connects with the already deployed testnet contracts
 pnpm run dev
 
 # For the next steps move to the contracts folder
@@ -55,10 +55,10 @@ pnpm run node
 # Build contracts
 pnpm run build
 
-# Deploy contracts (deploy to local node)
+# Deploy contracts (deploy to local node, here we use a fake oracle contract)
 pnpm run deploy
 
-# Deploy contracts to testnet (here we use the DIA oracle)
+# Deploy contracts to testnet (here we use the oracle provided by DIA)
 CHAIN=alephzero-testnet pnpm run deploy
 
 # Run tests
@@ -68,12 +68,12 @@ pnpm run test
 ## Demo
 
 Contract addresses on testnet:
-- Manager:
-- Market:
-- Vault:
-- wAZERO (our own wrapped AZERO deployment):
+- Manager:                                    5DnDzkGpSGmWfnWAjvCWJqqHg6g4nrxYmvinPzDAe6umr5jg
+- Market (AZERO/USD):                         5FJ6tvxARQnriY1UPHNmNUKzZGHXqMGYVsXJa3jvEUbjMBW8
+- Vault:                                      5Cb7x4Lh2mRHfWaujx1CS2xqtPdjUBMV6p7gzWm8HbiaySF1
+- wAZERO (our own wrapped AZERO deployment):  5EAz6SipuHb2gsaf9fxRhrkw3xcTfFdr6PSQu31C4mkfDWV1
 
-Demo: [FairPetuals]()
+Demo: [FairPetuals](https://ctrl-plus-fairpetual-frontend.vercel.app/)
 
 # ink!athon Boilerplate
 
